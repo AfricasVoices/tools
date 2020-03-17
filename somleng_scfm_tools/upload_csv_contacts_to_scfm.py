@@ -5,6 +5,7 @@ import argparse
 from core_data_modules.logging import Logger
 
 log = Logger(__name__)
+log.set_project_name("UploadCsvContactsToScfm")
 
 
 if __name__ == "__main__":
@@ -29,20 +30,29 @@ if __name__ == "__main__":
     with open(csv_input_file_path, 'r') as f:
         contacts_data = csv.DictReader(f)
 
-        # Format contacts data to match SCFM format
+        # Format contacts data to match scfm format
         contacts_to_upload = {}
         for contact in contacts_data:
             key = contact['Mobile Number']
 
             contacts_to_upload[key] = {'msisdn': contact['Mobile Number'],
-                                       'metadata': {'location': contact['Location'], 'group': contact['Group']}}
+                                       'metadata': {'location': contact['Location'], 'group': contact['Group']},}
 
-    # Upload contacts to Somleng
+    # Upload contacts to scfm
     api_endpoint = f'{scfm_instance_url}/api/contacts'
 
+    uploaded_contacts = 0
+    failed_contacts = 0
+    failed_status_codes = []
     for contact in contacts_to_upload.values():
-        ct = requests.post(api_endpoint, scfm_contacts_api_key, contact)
-        print(api_endpoint)
-        print(scfm_contacts_api_key)
         print(contact)
-        print(ct.status_code)
+        responce = requests.post(api_endpoint, auth=(scfm_contacts_api_key, ''),
+                           data=contact)
+        if responce.status_code == 201:
+            uploaded_contacts +=1
+        else:
+            failed_contacts +=1
+            failed_status_codes.append(responce.status_code)
+
+    log.info(f'Uploaded {uploaded_contacts} contact(s) successfully')
+    log.debug(f'{failed_contacts} contact(s) upload failed due to {failed_status_codes} reasons')

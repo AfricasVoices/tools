@@ -1,6 +1,7 @@
-import requests
+import json
 import csv
 import argparse
+import http.client
 
 from core_data_modules.logging import Logger
 
@@ -9,16 +10,15 @@ log.set_project_name("UploadCsvContactsToScfm")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Migrates a phone number <-> uuid table from Core Data Modules "
-                                                 "to Firestore")
+    parser = argparse.ArgumentParser(description="Uploads a phone number:metadata from a csv file with header "
+                                                 "to SCFM somleng")
 
     parser.add_argument("scfm_instance_url", metavar="scfm-instance-url",
-                        help="Url to the server hosting the scfm instance")
+                        help="Url to the server hosting the scfm instance in the format {scfm.somleng.org}")
     parser.add_argument("scfm_contacts_api_key", metavar="scfm-contacts-api-key",
                         help="Api key that authenticates scfm read and write contacts operations")
     parser.add_argument("csv_input_file_path", metavar="csv-input-file-path",
-                        help="Path to a csv file to read  to upload from")
-
+                        help="Path to a csv file to read contacts to upload from, the csv formats should be [Mobile Number, Location, Group]")
 
     args = parser.parse_args()
 
@@ -35,24 +35,29 @@ if __name__ == "__main__":
         for contact in contacts_data:
             key = contact['Mobile Number']
 
-            contacts_to_upload[key] = {'msisdn': contact['Mobile Number'],
-                                       'metadata': {'location': contact['Location'], 'group': contact['Group']},}
-
-    # Upload contacts to scfm
-    api_endpoint = f'{scfm_instance_url}/api/contacts'
+            contacts_to_upload[key] = {'msisdn': contact['Mobile Number'],'metadata': {'location': contact['Location'], 'group': contact['Group']}}
 
     uploaded_contacts = 0
     failed_contacts = 0
     failed_status_codes = []
+
+    #Upload or update contacts
     for contact in contacts_to_upload.values():
-        print(contact)
-        responce = requests.post(api_endpoint, auth=(scfm_contacts_api_key, ''),
-                           data=contact)
-        if responce.status_code == 201:
-            uploaded_contacts +=1
+        conn = http.client.HTTPSConnection(scfm_instance_url)
+
+        headers = {
+            'content-type': "application/json",
+            'authorization': f'Bearer {scfm_contacts_api_key}'
+        }
+
+        conn.request("POST", "/api/contact_data", json.dumps(contact), headers)
+
+        responce = conn.getresponse()
+        if responce.status == 201:
+            uploaded_contacts += 1
         else:
-            failed_contacts +=1
-            failed_status_codes.append(responce.status_code)
+            failed_contacts += 1
+            failed_status_codes.append(responce.status)
 
     log.info(f'Uploaded {uploaded_contacts} contact(s) successfully')
     log.debug(f'{failed_contacts} contact(s) upload failed due to {failed_status_codes} reasons')

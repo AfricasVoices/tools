@@ -3,6 +3,7 @@ import tarfile
 import tempfile
 
 from core_data_modules.logging import Logger
+from core_data_modules.util import TimeUtils
 from rapid_pro_tools.rapid_pro_client import RapidProClient
 from storage.google_cloud import google_cloud_utils
 
@@ -36,6 +37,10 @@ if __name__ == "__main__":
                   f"--gcs-upload-path")
         exit(1)
 
+    export_start_date = TimeUtils.utc_now_as_iso_string()
+
+    log.info(f"Starting export at {export_start_date}")
+
     log.info("Downloading the Rapid Pro access token...")
     rapid_pro_token = google_cloud_utils.download_blob_to_string(
         google_cloud_credentials_file_path, rapid_pro_token_file_url).strip()
@@ -51,7 +56,7 @@ if __name__ == "__main__":
 
         log.info(f"Zipping the exported data directory '{export_directory_path}' to '{gzip_export_file_path}'...")
         with tarfile.open(gzip_export_file_path, "w:gz") as tar:
-            tar.add(export_directory_path, arcname="export")
+            tar.add(export_directory_path, arcname=f"export-{export_start_date}")
 
         if gcs_upload_path is not None:
             log.info(f"Uploading the zipped file to {gcs_upload_path}...")

@@ -1,4 +1,5 @@
 import argparse
+import csv
 
 from core_data_modules.logging import Logger
 from core_data_modules.util import TimeUtils
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     parser.add_argument("rapid_pro_token_file_url", metavar="rapid-pro-token-file-url",
                         help="GS URLs of a text file containing the authorisation token for the Rapid Pro server")
     parser.add_argument("output_file_path", metavar="output-file-path",
-                        help="Output text file to write the phone numbers to")
+                        help="Output CSV file to write the phone numbers to")
 
     args = parser.parse_args()
 
@@ -47,6 +48,8 @@ if __name__ == "__main__":
 
     log.warning(f"Exporting {len(inbound_phone_numbers)} inbound phone numbers to {output_file_path}...")
     with open(output_file_path, "w") as f:
+        writer = csv.DictWriter(f, fieldnames=["URN:Tel", "Name"])
+        writer.writeheader()
         for number in inbound_phone_numbers:
-            f.write(number + "\n")
+            writer.writerow({"URN:Tel": number, "Name": ""})
     log.info(f"Done. Wrote {len(inbound_phone_numbers)} inbound phone numbers to {output_file_path}")

@@ -23,23 +23,23 @@ done
 # Check that the correct number of arguments were provided.
 if [[ $# -ne 5 ]]; then
     echo "Usage: ./docker-run.sh
-    <google-cloud-credentials-file-path> <source-domain> <source-credentials-url>
-    <target-domain> <target-credentials-url>"
+    <google-cloud-credentials-file-path> <instance-1-domain> <instance-1-credentials-url>
+    <instance-2-domain> <instance-2-credentials-url>"
     exit
 fi
 
 # Assign the program arguments to bash variables.
 GOOGLE_CLOUD_CREDENTIALS_FILE_PATH=$1
-SOURCE_DOMAIN=$2
-SOURCE_CREDENTIALS_URL=$3
-TARGET_DOMAIN=$4
-TARGET_CREDENTIALS_URL=$5
+INSTANCE_1_DOMAIN=$2
+INSTANCE_1_CREDENTIALS_URL=$3
+INSTANCE_2_DOMAIN=$4
+INSTANCE_2_CREDENTIALS_URL=$5
 
 # Build an image for this pipeline stage.
 docker build -t "$IMAGE_NAME" .
 
 CMD="pipenv run python -u synchronise_contacts.py $FORCE /credentials/google-cloud-credentials.json \
-     \"$SOURCE_DOMAIN\" \"$SOURCE_CREDENTIALS_URL\" \"$TARGET_DOMAIN\" \"$TARGET_CREDENTIALS_URL\"
+     \"$INSTANCE_1_DOMAIN\" \"$INSTANCE_1_CREDENTIALS_URL\" \"$INSTANCE_2_DOMAIN\" \"$INSTANCE_2_CREDENTIALS_URL\"
 "
 container="$(docker container create -w /app "$IMAGE_NAME" /bin/bash -c "$CMD")"
 

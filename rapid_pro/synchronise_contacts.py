@@ -41,7 +41,7 @@ if __name__ == "__main__":
         google_cloud_credentials_file_path, instance_1_credentials_url).strip()
     instance_1 = RapidProClient(instance_1_domain, instance_1_token)
 
-    log.info("Downloading the target instance access token...")
+    log.info("Downloading the access token for instance 2...")
     instance_2_token = google_cloud_utils.download_blob_to_string(
         google_cloud_credentials_file_path, instance_2_credentials_url).strip()
     instance_2 = RapidProClient(instance_2_domain, instance_2_token)
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         valid_contacts = []
         for contact in contacts:
             if len(contact.urns) != 1:
-                log.warning(f"Found a contact in the source instance with multiple URNS; skipping. "
+                log.warning(f"Found a contact with multiple URNS; skipping. "
                             f"The RapidPro UUID is '{contact.uuid}'")
                 continue
             if contact.urns[0].startswith("tel:") and not contact.urns[0].startswith("tel:+"):

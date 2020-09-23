@@ -40,19 +40,28 @@ if __name__ == "__main__":
     workspace_1_token = google_cloud_utils.download_blob_to_string(
         google_cloud_credentials_file_path, workspace_1_credentials_url).strip()
     workspace_1 = RapidProClient(workspace_1_domain, workspace_1_token)
+    workspace_1_name = workspace_1.get_workspace_name()
+    log.info(f"Done. workspace 1 is called {workspace_1_name}")
 
     log.info("Downloading the access token for workspace 2...")
     workspace_2_token = google_cloud_utils.download_blob_to_string(
         google_cloud_credentials_file_path, workspace_2_credentials_url).strip()
     workspace_2 = RapidProClient(workspace_2_domain, workspace_2_token)
+    workspace_2_name = workspace_2.get_workspace_name()
+    log.info(f"Done. workspace 2 is called {workspace_2_name}")
 
     # Synchronise the contact fields
     log.info("Synchronising contact fields...")
+    log.info(f"Downloading all fields from {workspace_1_name}...")
     workspace_1_fields = workspace_1.get_fields()
+    log.info(f"Downloading all fields from {workspace_2_name}...")
     workspace_2_fields = workspace_2.get_fields()
+
+    log.info(f"Synchronising fields from {workspace_1_name} to {workspace_2_name}...")
     for field in workspace_1_fields:
         if field.key not in {f.key for f in workspace_2_fields}:
             workspace_2.create_field(field.label)
+    log.info(f"Synchronising fields from {workspace_2_name} to {workspace_1_name}...")
     for field in workspace_2_fields:
         if field.key not in {f.key for f in workspace_1_fields}:
             workspace_1.create_field(field.label)
@@ -60,7 +69,9 @@ if __name__ == "__main__":
 
     # Synchronise the contacts
     log.info("Synchronising contacts...")
+    log.info(f"Downloading all contacts from {workspace_1_name}...")
     workspace_1_contacts = workspace_1.get_raw_contacts()
+    log.info(f"Downloading all contacts from {workspace_2_name}...")
     workspace_2_contacts = workspace_2.get_raw_contacts()
     
     def filter_valid_contacts(contacts):
@@ -77,9 +88,9 @@ if __name__ == "__main__":
             valid_contacts.append(contact)
         return valid_contacts
 
-    log.info("Filtering out invalid contacts from workspace 1...")
+    log.info(f"Filtering out invalid contacts from {workspace_1_name}...")
     workspace_1_contacts = filter_valid_contacts(workspace_1_contacts)
-    log.info("Filtering out invalid contacts from workspace 2...")
+    log.info(f"Filtering out invalid contacts from {workspace_2_name}...")
     workspace_2_contacts = filter_valid_contacts(workspace_2_contacts)
 
     # Trim URN metadata because although Rapid Pro sometimes provides some in its get APIs, it refuses them when setting
@@ -99,16 +110,16 @@ if __name__ == "__main__":
     urns_unique_to_workspace_1 = workspace_1_contacts_lut.keys() - workspace_2_contacts_lut.keys()
     for i, urn in enumerate(urns_unique_to_workspace_1):
         contact = workspace_1_contacts_lut[urn]
-        log.info(f"Adding new contacts to workspace 2: {i + 1}/{len(urns_unique_to_workspace_1)} "
-                 f"(Rapid Pro UUID '{contact.uuid}' in workspace 1)")
+        log.info(f"Adding new contacts to {workspace_2_name}: {i + 1}/{len(urns_unique_to_workspace_1)} "
+                 f"(Rapid Pro UUID '{contact.uuid}' in {workspace_1_name})")
         workspace_2.update_contact(contact.urns[0], contact.name, contact.fields)
 
     # Update contacts present in workspace 2 but not in workspace 1
     urns_unique_to_workspace_2 = workspace_2_contacts_lut.keys() - workspace_1_contacts_lut.keys()
     for i, urn in enumerate(urns_unique_to_workspace_2):
         contact = workspace_2_contacts_lut[urn]
-        log.info(f"Adding new contacts to workspace 1: {i + 1}/{len(urns_unique_to_workspace_2)} "
-                 f"(Rapid Pro UUID '{contact.uuid}' in workspace 2)")
+        log.info(f"Adding new contacts to {workspace_1_name}: {i + 1}/{len(urns_unique_to_workspace_2)} "
+                 f"(Rapid Pro UUID '{contact.uuid}' in {workspace_2_name})")
         workspace_1.update_contact(contact.urns[0], contact.name, contact.fields)
 
     # Update contacts present in both workspaces
@@ -118,28 +129,34 @@ if __name__ == "__main__":
         contact_v2 = workspace_2_contacts_lut[urn]
 
         if contact_v1.name == contact_v2.name and contact_v1.fields == contact_v2.fields:
-            log.info(f"Synchronising contacts in both workspaces {i + 1}/{len(urns_in_both_workspaces)}: "
-                     f"Contacts identical."
-                     f"Rapid Pro UUIDs are '{contact_v1.uuid}' in workspace 1; '{contact_v2.uuid}' in workspace 2")
+            log.debug(f"Synchronising contacts in both workspaces {i + 1}/{len(urns_in_both_workspaces)}: "
+                      f"Contacts identical."
+                      f"(Rapid Pro UUIDs are '{contact_v1.uuid}' in {workspace_1_name}; "
+                      f"'{contact_v2.uuid}' in {workspace_2_name})")
             continue
 
         # Contacts differ
         if not force_update:
             log.warning(f"Synchronising contacts in both workspaces {i + 1}/{len(urns_in_both_workspaces)}: "
                         f"Contacts differ, but not overwriting. Use --force to write the latest everywhere. "
-                        f"Rapid Pro UUIDs are '{contact_v1.uuid}' in workspace 1; '{contact_v2.uuid}' in workspace 2")
+                        f"(Rapid Pro UUIDs are '{contact_v1.uuid}' in {workspace_1_name}; "
+                        f"'{contact_v2.uuid}' in {workspace_2_name})")
             continue
             
         # Assume the most recent contact is correct
-        # IMPORTANT: If the same contact has been changed on both Rapid Pro workspaces since the last sync was performed,
-        #            the older changes will be overwritten.
+        # IMPORTANT: If the same contact has been changed on both Rapid Pro workspaces since the last sync was
+        #            performed, the older changes will be overwritten.
         if contact_v1.modified_on > contact_v2.modified_on:
             log.info(f"Synchronising contacts in both workspaces {i + 1}/{len(urns_in_both_workspaces)}: "
-                     f"Contacts differ, overwriting the contact in workspace 2 with the more recent one in workspace 1. "
-                     f"Rapid Pro UUIDs are '{contact_v1.uuid}' in workspace 1; '{contact_v2.uuid}' in workspace 2")
+                     f"Contacts differ, overwriting the contact in {workspace_2_name} with the more recent one in "
+                     f"{workspace_1_name}. "
+                     f"(Rapid Pro UUIDs are '{contact_v1.uuid}' in {workspace_1_name}; "
+                     f"'{contact_v2.uuid}' in {workspace_2_name})")
             workspace_2.update_contact(urn, contact_v1.name, contact_v1.fields)
         else:
             log.info(f"Synchronising contacts in both workspaces {i + 1}/{len(urns_in_both_workspaces)}: "
-                     f"Contacts differ, overwriting the contact in workspace 1 with the more recent one in workspace 2. "
-                     f"Rapid Pro UUIDs are '{contact_v1.uuid}' in workspace 1; '{contact_v2.uuid}' in workspace 2")
+                     f"Contacts differ, overwriting the contact in {workspace_1_name} with the more recent one in "
+                     f"{workspace_2_name}. "
+                     f"(Rapid Pro UUIDs are '{contact_v1.uuid}' in {workspace_1_name}; "
+                     f"'{contact_v2.uuid}' in {workspace_2_name})")
             workspace_1.update_contact(urn, contact_v2.name, contact_v2.fields)

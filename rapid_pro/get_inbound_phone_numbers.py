@@ -10,7 +10,7 @@ from temba_client.v2 import Message
 log = Logger(__name__)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Downloads all inbound messages from Rapid Pro instances and exports "
+    parser = argparse.ArgumentParser(description="Downloads all inbound messages from Rapid Pro and exports "
                                                  "the phone numbers we heard from")
 
     parser.add_argument("google_cloud_credentials_file_path", metavar="google-cloud-credentials-file-path",

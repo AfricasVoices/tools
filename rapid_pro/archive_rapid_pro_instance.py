@@ -10,7 +10,7 @@ from storage.google_cloud import google_cloud_utils
 log = Logger(__name__)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Archives all the data in a Rapid Pro instance available via the "
+    parser = argparse.ArgumentParser(description="Archives all the data in a Rapid Pro workspace available via the "
                                                  "API to local disk and/or google cloud storage")
 
     parser.add_argument("--gzip-export-file-path",
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     rapid_pro = RapidProClient(rapid_pro_domain, rapid_pro_token)
 
     with tempfile.TemporaryDirectory() as export_directory_path:
-        log.info(f"Downloading all data from the Rapid Pro instance to temporary directory '{export_directory_path}'...")
+        log.info(f"Downloading all data from the Rapid Pro workspace to temporary directory '{export_directory_path}'...")
         rapid_pro.export_all_data(export_directory_path)
 
         if gzip_export_file_path is None:

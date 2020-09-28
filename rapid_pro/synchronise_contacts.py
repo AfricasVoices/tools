@@ -57,13 +57,28 @@ if __name__ == "__main__":
     workspace_2_name = workspace_2.get_workspace_name()
     log.info(f"Done. workspace 2 is called {workspace_2_name}")
 
-    # Synchronise the contact fields
-    log.info("Synchronising contact fields...")
+    # Download the data from Rapid Pro
+    log.info("Downloading contact fields...")
     log.info(f"Downloading all fields from {workspace_1_name}...")
     workspace_1_fields = workspace_1.get_fields()
     log.info(f"Downloading all fields from {workspace_2_name}...")
     workspace_2_fields = workspace_2.get_fields()
 
+    # Synchronise the contacts
+    log.info("Downloading contacts...")
+    log.info(f"Downloading all contacts from {workspace_1_name}...")
+    workspace_1_contacts = workspace_1.get_raw_contacts()
+    log.info(f"Downloading all contacts from {workspace_2_name}...")
+    workspace_2_contacts = workspace_2.get_raw_contacts()
+
+    # If in dry_run mode, dereference workspace_1 and workspace_2 as an added safety. This prevents accidental
+    # writes to either instance.
+    if dry_run:
+        workspace_1 = None
+        workspace_2 = None
+
+    # Synchronise the data
+    # Synchronise the contact fields
     log.info(f"Synchronising fields from {workspace_1_name} to {workspace_2_name}...")
     for field in workspace_1_fields:
         if field.key not in {f.key for f in workspace_2_fields}:
@@ -80,13 +95,6 @@ if __name__ == "__main__":
             workspace_1.create_field(field.label)
     log.info("Contact fields synchronised")
 
-    # Synchronise the contacts
-    log.info("Synchronising contacts...")
-    log.info(f"Downloading all contacts from {workspace_1_name}...")
-    workspace_1_contacts = workspace_1.get_raw_contacts()
-    log.info(f"Downloading all contacts from {workspace_2_name}...")
-    workspace_2_contacts = workspace_2.get_raw_contacts()
-    
     def filter_valid_contacts(contacts):
         valid_contacts = []
         for contact in contacts:

@@ -30,7 +30,7 @@ if __name__ == "__main__":
                         help="GS URL to the organisation access token file for authenticating to the second workspace")
     parser.add_argument("raw_data_log_directory", metavar="raw-data-log-directory",
                         help="Directory to log the raw contacts data exported from Rapid Pro to. Data is exported to "
-                             "files called <raw-data-log-directory>/<workspace-name>_contacts.json")
+                             "files called <raw-data-log-directory>/<workspace-name>_raw_contacts.json")
 
     args = parser.parse_args()
 

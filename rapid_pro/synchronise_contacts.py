@@ -72,7 +72,7 @@ if __name__ == "__main__":
     workspace_2_contacts = workspace_2.get_raw_contacts()
 
     # If in dry_run mode, dereference workspace_1 and workspace_2 as an added safety. This prevents accidental
-    # writes to either instance.
+    # writes to either workspace.
     if dry_run:
         workspace_1 = None
         workspace_2 = None

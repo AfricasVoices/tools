@@ -136,26 +136,34 @@ if __name__ == "__main__":
             contact.name = None
 
     # Update contacts present in workspace 1 but not in workspace 2
+    new_contacts_in_workspace_2 = 0
     urns_unique_to_workspace_1 = workspace_1_contacts_lut.keys() - workspace_2_contacts_lut.keys()
     for i, urn in enumerate(urns_unique_to_workspace_1):
         contact = workspace_1_contacts_lut[urn]
         log.info(f"Adding new contacts to {workspace_2_name}: {i + 1}/{len(urns_unique_to_workspace_1)} "
                  f"(Rapid Pro UUID '{contact.uuid}' in {workspace_1_name})")
+        new_contacts_in_workspace_2 += 1
         if dry_run:
             continue
         workspace_2.update_contact(contact.urns[0], contact.name, contact.fields)
 
     # Update contacts present in workspace 2 but not in workspace 1
+    new_contacts_in_workspace_1 = 0
     urns_unique_to_workspace_2 = workspace_2_contacts_lut.keys() - workspace_1_contacts_lut.keys()
     for i, urn in enumerate(urns_unique_to_workspace_2):
         contact = workspace_2_contacts_lut[urn]
         log.info(f"Adding new contacts to {workspace_1_name}: {i + 1}/{len(urns_unique_to_workspace_2)} "
                  f"(Rapid Pro UUID '{contact.uuid}' in {workspace_2_name})")
+        new_contacts_in_workspace_1 += 1
         if dry_run:
             continue
         workspace_1.update_contact(contact.urns[0], contact.name, contact.fields)
 
     # Update contacts present in both workspaces
+    identical_contacts = 0
+    skipped_contacts = 0
+    updated_contacts_in_workspace_1 = 0
+    updated_contacts_in_workspace_2 = 0
     urns_in_both_workspaces = workspace_1_contacts_lut.keys() & workspace_2_contacts_lut.keys()
     for i, urn in enumerate(sorted(urns_in_both_workspaces)):
         contact_v1 = workspace_1_contacts_lut[urn]
@@ -166,6 +174,7 @@ if __name__ == "__main__":
                       f"Contacts identical. "
                       f"(Rapid Pro UUIDs are '{contact_v1.uuid}' in {workspace_1_name}; "
                       f"'{contact_v2.uuid}' in {workspace_2_name})")
+            identical_contacts += 1
             continue
 
         # Contacts differ
@@ -174,6 +183,7 @@ if __name__ == "__main__":
                         f"Contacts differ, but not overwriting. Use --force to write the latest everywhere. "
                         f"(Rapid Pro UUIDs are '{contact_v1.uuid}' in {workspace_1_name}; "
                         f"'{contact_v2.uuid}' in {workspace_2_name})")
+            skipped_contacts += 1
             continue
             
         # Assume the most recent contact is correct
@@ -185,6 +195,7 @@ if __name__ == "__main__":
                      f"{workspace_1_name}. "
                      f"(Rapid Pro UUIDs are '{contact_v1.uuid}' in {workspace_1_name}; "
                      f"'{contact_v2.uuid}' in {workspace_2_name})")
+            updated_contacts_in_workspace_2 += 1
             if dry_run:
                 continue
             workspace_2.update_contact(urn, contact_v1.name, contact_v1.fields)
@@ -194,6 +205,21 @@ if __name__ == "__main__":
                      f"{workspace_2_name}. "
                      f"(Rapid Pro UUIDs are '{contact_v1.uuid}' in {workspace_1_name}; "
                      f"'{contact_v2.uuid}' in {workspace_2_name})")
+            updated_contacts_in_workspace_1 += 1
             if dry_run:
                 continue
             workspace_1.update_contact(urn, contact_v2.name, contact_v2.fields)
+
+    log.info(f"Contacts sync complete. Summary of actions{' (dry run)' if dry_run else ''}:")
+    log.info(f"Created {new_contacts_in_workspace_1} new contacts in workspace {workspace_1_name} using the version in "
+             f"{workspace_2_name}")
+    log.info(f"Created {new_contacts_in_workspace_2} new contacts in workspace {workspace_2_name} using the version in "
+             f"{workspace_1_name}")
+    if force_update:
+        log.info(f"Overwrote {updated_contacts_in_workspace_1} contacts in workspace {workspace_1_name} with the newer "
+                 f"version in workspace {workspace_2_name}")
+        log.info(f"Overwrote {updated_contacts_in_workspace_2} contacts in workspace {workspace_2_name} with the newer "
+                 f"version in workspace {workspace_1_name}")
+    else:
+        log.info(f"Skipped {skipped_contacts} contacts that differed between the workspaces")
+    log.info(f"Skipped {identical_contacts} contacts that were identical in both workspaces")

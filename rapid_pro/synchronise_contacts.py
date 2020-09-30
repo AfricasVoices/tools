@@ -1,6 +1,7 @@
 import argparse
 
 from core_data_modules.logging import Logger
+from core_data_modules.util import IOUtils
 from storage.google_cloud import google_cloud_utils
 
 from rapid_pro_tools.rapid_pro_client import RapidProClient
@@ -27,6 +28,9 @@ if __name__ == "__main__":
                         help="Domain that the second workspace of Rapid Pro is running on")
     parser.add_argument("workspace_2_credentials_url", metavar="workspace-2-credentials-url",
                         help="GS URL to the organisation access token file for authenticating to the second workspace")
+    parser.add_argument("raw_data_log_directory", metavar="raw-data-log-directory",
+                        help="Directory to log the raw contacts data exported from Rapid Pro to. Data is exported to "
+                             "files called <raw-data-log-directory>/<workspace-name>_raw_contacts.json")
 
     args = parser.parse_args()
 
@@ -38,6 +42,7 @@ if __name__ == "__main__":
     workspace_1_credentials_url = args.workspace_1_credentials_url
     workspace_2_domain = args.workspace_2_domain
     workspace_2_credentials_url = args.workspace_2_credentials_url
+    raw_data_log_directory = args.raw_data_log_directory
 
     if dry_run:
         log.info("Performing a dry-run")
@@ -66,10 +71,13 @@ if __name__ == "__main__":
 
     # Synchronise the contacts
     log.info("Downloading contacts...")
+    IOUtils.ensure_dirs_exist(raw_data_log_directory)
     log.info(f"Downloading all contacts from {workspace_1_name}...")
-    workspace_1_contacts = workspace_1.get_raw_contacts()
+    with open(f"{raw_data_log_directory}/{workspace_1_name}_raw_contacts.json", "w") as f:
+        workspace_1_contacts = workspace_1.get_raw_contacts(raw_export_log_file=f)
     log.info(f"Downloading all contacts from {workspace_2_name}...")
-    workspace_2_contacts = workspace_2.get_raw_contacts()
+    with open(f"{raw_data_log_directory}/{workspace_2_name}_raw_contacts.json", "w") as f:
+        workspace_2_contacts = workspace_2.get_raw_contacts(raw_export_log_file=f)
 
     # If in dry_run mode, dereference workspace_1 and workspace_2 as an added safety. This prevents accidental
     # writes to either workspace.

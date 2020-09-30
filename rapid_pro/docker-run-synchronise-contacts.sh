@@ -12,6 +12,9 @@ while [[ $# -gt 0 ]]; do
         --force)
             FORCE="--force"
             shift;;
+        --dry-run)
+            DRY_RUN="--dry-run"
+            shift;;
         --)
             shift
             break;;
@@ -22,7 +25,7 @@ done
 
 # Check that the correct number of arguments were provided.
 if [[ $# -ne 5 ]]; then
-    echo "Usage: ./docker-run.sh
+    echo "Usage: ./docker-run.sh [--force | -f] [--dry-run]
     <google-cloud-credentials-file-path> <workspace-1-domain> <workspace-1-credentials-url>
     <workspace-2-domain> <workspace-2-credentials-url>"
     exit
@@ -38,7 +41,7 @@ WORKSPACE_2_CREDENTIALS_URL=$5
 # Build an image for this pipeline stage.
 docker build -t "$IMAGE_NAME" .
 
-CMD="pipenv run python -u synchronise_contacts.py $FORCE /credentials/google-cloud-credentials.json \
+CMD="pipenv run python -u synchronise_contacts.py $FORCE $DRY_RUN /credentials/google-cloud-credentials.json \
      \"$WORKSPACE_1_DOMAIN\" \"$WORKSPACE_1_CREDENTIALS_URL\" \"$WORKSPACE_2_DOMAIN\" \"$WORKSPACE_2_CREDENTIALS_URL\"
 "
 container="$(docker container create -w /app "$IMAGE_NAME" /bin/bash -c "$CMD")"

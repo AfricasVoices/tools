@@ -135,6 +135,18 @@ if __name__ == "__main__":
         if contact.name == "":
             contact.name = None
 
+    # Rapid Pro returns all the contact fields on each contact, even if there isn't a value set for that field for a
+    # contact. If there is no value set, the field will be returned with value None. This means the moment we create
+    # a new contact field on a Rapid Pro instance, all of the the contacts will immediately differ and be updated
+    # by this tool.
+    # Solve this by ensuring that all contacts have an entry for all the fields from both workspaces, so thac contacts
+    # can only differ if there is a genuine significant difference in field values.
+    all_fields = {f.key for f in workspace_1_fields + workspace_2_fields}
+    for contact in workspace_1_contacts + workspace_2_contacts:
+        for field in all_fields:
+            if field not in contact.fields:
+                contact.fields[field] = None
+
     # Update contacts present in workspace 1 but not in workspace 2
     new_contacts_in_workspace_2 = 0
     urns_unique_to_workspace_1 = workspace_1_contacts_lut.keys() - workspace_2_contacts_lut.keys()

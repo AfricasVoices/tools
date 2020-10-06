@@ -17,6 +17,8 @@ if __name__ == "__main__":
     parser.add_argument("--dry-run", const=True, default=False, action="store_const",
                         help="Logs the updates that would be made without actually updating any data in either "
                              "workspace")
+    parser.add_argument("--workspaces-to-update", choices=["1", "2", "both"], const="both", default="both", nargs="?",
+                        help="The workspaces to update")
     parser.add_argument("google_cloud_credentials_file_path", metavar="google-cloud-credentials-file-path",
                         help="Path to a Google Cloud service account credentials file to use to access the "
                              "credentials bucket")
@@ -36,6 +38,7 @@ if __name__ == "__main__":
 
     force_update = args.force
     dry_run = args.dry_run
+    workspaces_to_update = args.workspaces_to_update
 
     google_cloud_credentials_file_path = args.google_cloud_credentials_file_path
     workspace_1_domain = args.workspace_1_domain
@@ -87,20 +90,22 @@ if __name__ == "__main__":
 
     # Synchronise the data
     # Synchronise the contact fields
-    log.info(f"Synchronising fields from {workspace_1_name} to {workspace_2_name}...")
-    for field in workspace_1_fields:
-        if field.key not in {f.key for f in workspace_2_fields}:
-            if dry_run:
-                log.info(f"Would create field {field.label}")
-                continue
-            workspace_2.create_field(field.label)
-    log.info(f"Synchronising fields from {workspace_2_name} to {workspace_1_name}...")
-    for field in workspace_2_fields:
-        if field.key not in {f.key for f in workspace_1_fields}:
-            if dry_run:
-                log.info(f"Would create field {field.label}")
-                continue
-            workspace_1.create_field(field.label)
+    if workspaces_to_update in {"2", "both"}:
+        log.info(f"Synchronising fields from {workspace_1_name} to {workspace_2_name}...")
+        for field in workspace_1_fields:
+            if field.key not in {f.key for f in workspace_2_fields}:
+                if dry_run:
+                    log.info(f"Would create field {field.label}")
+                    continue
+                workspace_2.create_field(field.label)
+    if workspaces_to_update in {"1", "both"}:
+        log.info(f"Synchronising fields from {workspace_2_name} to {workspace_1_name}...")
+        for field in workspace_2_fields:
+            if field.key not in {f.key for f in workspace_1_fields}:
+                if dry_run:
+                    log.info(f"Would create field {field.label}")
+                    continue
+                workspace_1.create_field(field.label)
     log.info("Contact fields synchronised")
 
     def filter_valid_contacts(contacts):
@@ -149,27 +154,29 @@ if __name__ == "__main__":
 
     # Update contacts present in workspace 1 but not in workspace 2
     new_contacts_in_workspace_2 = 0
-    urns_unique_to_workspace_1 = workspace_1_contacts_lut.keys() - workspace_2_contacts_lut.keys()
-    for i, urn in enumerate(urns_unique_to_workspace_1):
-        contact = workspace_1_contacts_lut[urn]
-        log.info(f"Adding new contacts to {workspace_2_name}: {i + 1}/{len(urns_unique_to_workspace_1)} "
-                 f"(Rapid Pro UUID '{contact.uuid}' in {workspace_1_name})")
-        new_contacts_in_workspace_2 += 1
-        if dry_run:
-            continue
-        workspace_2.update_contact(contact.urns[0], contact.name, contact.fields)
+    if workspaces_to_update in {"2", "both"}:
+        urns_unique_to_workspace_1 = workspace_1_contacts_lut.keys() - workspace_2_contacts_lut.keys()
+        for i, urn in enumerate(urns_unique_to_workspace_1):
+            contact = workspace_1_contacts_lut[urn]
+            log.info(f"Adding new contacts to {workspace_2_name}: {i + 1}/{len(urns_unique_to_workspace_1)} "
+                     f"(Rapid Pro UUID '{contact.uuid}' in {workspace_1_name})")
+            new_contacts_in_workspace_2 += 1
+            if dry_run:
+                continue
+            workspace_2.update_contact(contact.urns[0], contact.name, contact.fields)
 
     # Update contacts present in workspace 2 but not in workspace 1
     new_contacts_in_workspace_1 = 0
-    urns_unique_to_workspace_2 = workspace_2_contacts_lut.keys() - workspace_1_contacts_lut.keys()
-    for i, urn in enumerate(urns_unique_to_workspace_2):
-        contact = workspace_2_contacts_lut[urn]
-        log.info(f"Adding new contacts to {workspace_1_name}: {i + 1}/{len(urns_unique_to_workspace_2)} "
-                 f"(Rapid Pro UUID '{contact.uuid}' in {workspace_2_name})")
-        new_contacts_in_workspace_1 += 1
-        if dry_run:
-            continue
-        workspace_1.update_contact(contact.urns[0], contact.name, contact.fields)
+    if workspaces_to_update in {"1", "both"}:
+        urns_unique_to_workspace_2 = workspace_2_contacts_lut.keys() - workspace_1_contacts_lut.keys()
+        for i, urn in enumerate(urns_unique_to_workspace_2):
+            contact = workspace_2_contacts_lut[urn]
+            log.info(f"Adding new contacts to {workspace_1_name}: {i + 1}/{len(urns_unique_to_workspace_2)} "
+                     f"(Rapid Pro UUID '{contact.uuid}' in {workspace_2_name})")
+            new_contacts_in_workspace_1 += 1
+            if dry_run:
+                continue
+            workspace_1.update_contact(contact.urns[0], contact.name, contact.fields)
 
     # Update contacts present in both workspaces
     identical_contacts = 0
@@ -202,25 +209,27 @@ if __name__ == "__main__":
         # IMPORTANT: If the same contact has been changed on both Rapid Pro workspaces since the last sync was
         #            performed, the older changes will be overwritten.
         if contact_v1.modified_on > contact_v2.modified_on:
-            log.info(f"Synchronising contacts in both workspaces {i + 1}/{len(urns_in_both_workspaces)}: "
-                     f"Contacts differ, overwriting the contact in {workspace_2_name} with the more recent one in "
-                     f"{workspace_1_name}. "
-                     f"(Rapid Pro UUIDs are '{contact_v1.uuid}' in {workspace_1_name}; "
-                     f"'{contact_v2.uuid}' in {workspace_2_name})")
-            updated_contacts_in_workspace_2 += 1
-            if dry_run:
-                continue
-            workspace_2.update_contact(urn, contact_v1.name, contact_v1.fields)
+            if workspaces_to_update in {"2", "both"}:
+                log.info(f"Synchronising contacts in both workspaces {i + 1}/{len(urns_in_both_workspaces)}: "
+                         f"Contacts differ, overwriting the contact in {workspace_2_name} with the more recent one in "
+                         f"{workspace_1_name}. "
+                         f"(Rapid Pro UUIDs are '{contact_v1.uuid}' in {workspace_1_name}; "
+                         f"'{contact_v2.uuid}' in {workspace_2_name})")
+                updated_contacts_in_workspace_2 += 1
+                if dry_run:
+                    continue
+                workspace_2.update_contact(urn, contact_v1.name, contact_v1.fields)
         else:
-            log.info(f"Synchronising contacts in both workspaces {i + 1}/{len(urns_in_both_workspaces)}: "
-                     f"Contacts differ, overwriting the contact in {workspace_1_name} with the more recent one in "
-                     f"{workspace_2_name}. "
-                     f"(Rapid Pro UUIDs are '{contact_v1.uuid}' in {workspace_1_name}; "
-                     f"'{contact_v2.uuid}' in {workspace_2_name})")
-            updated_contacts_in_workspace_1 += 1
-            if dry_run:
-                continue
-            workspace_1.update_contact(urn, contact_v2.name, contact_v2.fields)
+            if workspaces_to_update in {"1", "both"}:
+                log.info(f"Synchronising contacts in both workspaces {i + 1}/{len(urns_in_both_workspaces)}: "
+                         f"Contacts differ, overwriting the contact in {workspace_1_name} with the more recent one in "
+                         f"{workspace_2_name}. "
+                         f"(Rapid Pro UUIDs are '{contact_v1.uuid}' in {workspace_1_name}; "
+                         f"'{contact_v2.uuid}' in {workspace_2_name})")
+                updated_contacts_in_workspace_1 += 1
+                if dry_run:
+                    continue
+                workspace_1.update_contact(urn, contact_v2.name, contact_v2.fields)
 
     log.info(f"Contacts sync complete. Summary of actions{' (dry run)' if dry_run else ''}:")
     log.info(f"Created {new_contacts_in_workspace_1} new contacts in workspace {workspace_1_name} using the version in "

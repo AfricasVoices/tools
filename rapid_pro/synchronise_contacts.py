@@ -90,18 +90,22 @@ if __name__ == "__main__":
 
     # Synchronise the data
     # Synchronise the contact fields
+    new_contact_fields_in_workspace_2 = 0
     if workspaces_to_update in {"2", "both"}:
         log.info(f"Synchronising fields from {workspace_1_name} to {workspace_2_name}...")
         for field in workspace_1_fields:
             if field.key not in {f.key for f in workspace_2_fields}:
+                new_contact_fields_in_workspace_2 += 1
                 if dry_run:
                     log.info(f"Would create field {field.label}")
                     continue
                 workspace_2.create_field(field.label)
+    new_contact_fields_in_workspace_1 = 0
     if workspaces_to_update in {"1", "both"}:
         log.info(f"Synchronising fields from {workspace_2_name} to {workspace_1_name}...")
         for field in workspace_2_fields:
             if field.key not in {f.key for f in workspace_1_fields}:
+                new_contact_fields_in_workspace_1 += 1
                 if dry_run:
                     log.info(f"Would create field {field.label}")
                     continue
@@ -232,6 +236,8 @@ if __name__ == "__main__":
                 workspace_1.update_contact(urn, contact_v2.name, contact_v2.fields)
 
     log.info(f"Contacts sync complete. Summary of actions{' (dry run)' if dry_run else ''}:")
+    log.info(f"Created {new_contact_fields_in_workspace_1} new contact fields in workspace {workspace_1_name}")
+    log.info(f"Created {new_contact_fields_in_workspace_2} new contact fields in workspace {workspace_2_name}")
     log.info(f"Created {new_contacts_in_workspace_1} new contacts in workspace {workspace_1_name} using the version in "
              f"{workspace_2_name}")
     log.info(f"Created {new_contacts_in_workspace_2} new contacts in workspace {workspace_2_name} using the version in "

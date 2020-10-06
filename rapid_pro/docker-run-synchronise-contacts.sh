@@ -15,6 +15,10 @@ while [[ $# -gt 0 ]]; do
         --dry-run)
             DRY_RUN="--dry-run"
             shift;;
+        --update)
+            UPDATE="--update $2"
+            shift
+            shift;;
         --)
             shift
             break;;
@@ -25,7 +29,7 @@ done
 
 # Check that the correct number of arguments were provided.
 if [[ $# -ne 6 ]]; then
-    echo "Usage: ./docker-run.sh [--force | -f] [--dry-run]
+    echo "Usage: ./docker-run.sh [--force | -f] [--dry-run] [--update {1, 2, both}]
     <google-cloud-credentials-file-path> <workspace-1-domain> <workspace-1-credentials-url>
     <workspace-2-domain> <workspace-2-credentials-url> <raw-data-log-directory>"
     exit
@@ -42,7 +46,7 @@ RAW_DATA_LOG_DIRECTORY=$6
 # Build an image for this pipeline stage.
 docker build -t "$IMAGE_NAME" .
 
-CMD="pipenv run python -u synchronise_contacts.py $FORCE $DRY_RUN /credentials/google-cloud-credentials.json \
+CMD="pipenv run python -u synchronise_contacts.py $FORCE $DRY_RUN $UPDATE /credentials/google-cloud-credentials.json \
      \"$WORKSPACE_1_DOMAIN\" \"$WORKSPACE_1_CREDENTIALS_URL\" \"$WORKSPACE_2_DOMAIN\" \"$WORKSPACE_2_CREDENTIALS_URL\" \
      /data/raw-data-logs
 "

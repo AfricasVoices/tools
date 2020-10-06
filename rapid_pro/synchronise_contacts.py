@@ -17,7 +17,7 @@ if __name__ == "__main__":
     parser.add_argument("--dry-run", const=True, default=False, action="store_const",
                         help="Logs the updates that would be made without actually updating any data in either "
                              "workspace")
-    parser.add_argument("--update", choices=["1", "2", "both"], const="both", default="both", nargs="?",
+    parser.add_argument("--workspaces-to-update", choices=["1", "2", "both"], const="both", default="both", nargs="?",
                         help="The workspaces to update")
     parser.add_argument("google_cloud_credentials_file_path", metavar="google-cloud-credentials-file-path",
                         help="Path to a Google Cloud service account credentials file to use to access the "
@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     force_update = args.force
     dry_run = args.dry_run
-    workspaces_to_update = args.update
+    workspaces_to_update = args.workspaces_to_update
 
     google_cloud_credentials_file_path = args.google_cloud_credentials_file_path
     workspace_1_domain = args.workspace_1_domain

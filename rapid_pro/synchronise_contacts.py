@@ -96,20 +96,36 @@ if __name__ == "__main__":
         for field in workspace_1_fields:
             if field.key not in {f.key for f in workspace_2_fields}:
                 new_contact_fields_in_workspace_2 += 1
+                # Create a new field in workspace 2 with the same id as the one in workspace 1.
+                # Unfortunately, we can't specify the id we'd like from Rapid Pro, but they're predictably generated
+                # from the label we provide so we can ensure the same id by setting the label of the new field
+                # to the id of the field in workspace 1.
+                # However, Rapid Pro doesn't accept underscores in labels so replace them with spaces before uploading
+                # to Rapid Pro. Rapid Pro will convert the spaces back to underscores when generating the id.
+                # Once the field is created on Rapid Pro, assert the generated id matches the one we were expecting.
+                # We should then be able to make another request to rename the new field to the correct name, but this
+                # part of the API is currently broken so script users will need to manually rename instead.
+                new_field_label = field.key.replace("_", "")
                 if dry_run:
-                    log.info(f"Would create field {field.label}")
+                    log.info(f"Would create field {new_field_label}")
                     continue
-                workspace_2.create_field(field.label)
+                new_field = workspace_2.create_field(new_field_label)
+                assert new_field.key == field.key, f"Generated field key was expected to be {field.key}, but was " \
+                                                   f"actually {new_field.key}"
     new_contact_fields_in_workspace_1 = 0
     if workspaces_to_update in {"1", "both"}:
         log.info(f"Synchronising fields from {workspace_2_name} to {workspace_1_name}...")
         for field in workspace_2_fields:
             if field.key not in {f.key for f in workspace_1_fields}:
                 new_contact_fields_in_workspace_1 += 1
+                # See comment for the sync from workspace 1 -> 2 for details.
+                new_field_label = field.key.replace("_", "")
                 if dry_run:
-                    log.info(f"Would create field {field.label}")
+                    log.info(f"Would create field {new_field_label}")
                     continue
-                workspace_1.create_field(field.label)
+                new_field = workspace_1.create_field(new_field_label)
+                assert new_field.key == field.key, f"Generated field key was expected to be {field.key}, but was " \
+                                                   f"actually {new_field.key}"
     log.info("Contact fields synchronised")
 
     def filter_valid_contacts(contacts):

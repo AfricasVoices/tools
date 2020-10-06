@@ -105,13 +105,13 @@ if __name__ == "__main__":
                 # Once the field is created on Rapid Pro, assert the generated id matches the one we were expecting.
                 # We should then be able to make another request to rename the new field to the correct name, but this
                 # part of the API is currently broken so script users will need to manually rename instead.
-                new_field_label = field.key.replace("_", "")
+                new_field_label = field.key.replace("_", " ")
                 if dry_run:
-                    log.info(f"Would create field {new_field_label}")
+                    log.info(f"Would create field '{new_field_label}'")
                     continue
                 new_field = workspace_2.create_field(new_field_label)
-                assert new_field.key == field.key, f"Generated field key was expected to be {field.key}, but was " \
-                                                   f"actually {new_field.key}"
+                assert new_field.key == field.key, f"Generated field key was expected to be '{field.key}', but was " \
+                                                   f"actually '{new_field.key}'"
     new_contact_fields_in_workspace_1 = 0
     if workspaces_to_update in {"1", "both"}:
         log.info(f"Synchronising fields from {workspace_2_name} to {workspace_1_name}...")
@@ -119,13 +119,13 @@ if __name__ == "__main__":
             if field.key not in {f.key for f in workspace_1_fields}:
                 new_contact_fields_in_workspace_1 += 1
                 # See comment for the sync from workspace 1 -> 2 for details.
-                new_field_label = field.key.replace("_", "")
+                new_field_label = field.key.replace("_", " ")
                 if dry_run:
-                    log.info(f"Would create field {new_field_label}")
+                    log.info(f"Would create field '{new_field_label}'")
                     continue
                 new_field = workspace_1.create_field(new_field_label)
-                assert new_field.key == field.key, f"Generated field key was expected to be {field.key}, but was " \
-                                                   f"actually {new_field.key}"
+                assert new_field.key == field.key, f"Generated field key was expected to be '{field.key}', but was " \
+                                                   f"actually '{new_field.key}'"
     log.info("Contact fields synchronised")
 
     def filter_valid_contacts(contacts):

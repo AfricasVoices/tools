@@ -119,7 +119,7 @@ if __name__ == "__main__":
                 log.warning(f"Found a contact with multiple URNS; skipping. "
                             f"The RapidPro UUID is '{contact.uuid}'")
                 continue
-            if contact.urns[0].startswith("tel:") and not contact.urns[0].startswith("tel:+"):
+            if contact.urns[0].startswith("tel:") and not contact.urns[0].startswith("tel:+254"):
                 log.warning(f"Found a contact with a telephone number but without a country code; skipping. "
                             f"The RapidPro UUID is '{contact.uuid}'")
                 continue

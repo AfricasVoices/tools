@@ -119,10 +119,17 @@ if __name__ == "__main__":
                 log.warning(f"Found a contact with multiple URNS; skipping. "
                             f"The RapidPro UUID is '{contact.uuid}'")
                 continue
-            if contact.urns[0].startswith("tel:") and not contact.urns[0].startswith("tel:+254"):
+            if contact.urns[0].startswith("tel:") and not contact.urns[0].startswith("tel:+"):
                 log.warning(f"Found a contact with a telephone number but without a country code; skipping. "
                             f"The RapidPro UUID is '{contact.uuid}'")
                 continue
+
+            #check for safaricom numbers forwarded with a wrong ke country code formating
+            if contact.urns[0].startswith("tel:+1") and len(contact.urns[0]) < 11:
+                log.warning(f"Found a kenyan telephone number without a proper +254 country code; skipping. "
+                            f"The RapidPro UUID is '{contact.uuid}'")
+                continue
+
             valid_contacts.append(contact)
         return valid_contacts
 

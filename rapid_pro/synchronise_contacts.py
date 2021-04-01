@@ -125,8 +125,8 @@ if __name__ == "__main__":
                 continue
 
             #check for safaricom numbers forwarded with a wrong ke country code formating
-            if contact.urns[0].startswith("tel:+1") and len(contact.urns[0]) < 11:
-                log.warning(f"Found a telephone that startswith +1 but less than 11 digits long. This is probably a malformed"
+            if contact.urns[0].startswith("tel:+1") and len(contact.urns[0]) < 15:
+                log.warning(f"Found a telephone that startswith +1 but less than 15 digits long. This is probably a malformed"
                             f" Safaricom number, skipping; "
                             f"The RapidPro UUID is '{contact.uuid}'")
                 continue

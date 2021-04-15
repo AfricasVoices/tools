@@ -70,4 +70,5 @@ if __name__ == "__main__":
         log.info(f"Uploading the mappings to {gcs_upload_path}...")
         google_cloud_utils.upload_string_to_blob(google_cloud_credentials_file_path, gcs_upload_path,
                                                  export_compressed)
-    log.info("Done")
+
+    log.info(f"Export complete ({len(table_names)} table(s))")

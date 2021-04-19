@@ -52,7 +52,9 @@ if __name__ == "__main__":
         rapid_pro.export_all_data(export_directory_path)
 
         if gzip_export_file_path is None:
-            gzip_export_file_path = f"{export_directory_path}/"
+            # The user didn't request a local export to their file system, so zip up the files to a location in the
+            # temporary directory ready for upload
+            gzip_export_file_path = f"{export_directory_path}/export.tar.gzip"
 
         log.info(f"Zipping the exported data directory '{export_directory_path}' to '{gzip_export_file_path}'...")
         with tarfile.open(gzip_export_file_path, "w:gz") as tar:

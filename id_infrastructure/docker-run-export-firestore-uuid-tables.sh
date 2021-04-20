@@ -54,8 +54,10 @@ echo "Starting container $container_short_id"
 docker start -a -i "$container"
 
 # Copy the output data back out of the container
-echo "Copying $container_short_id:/data/export.json.gzip -> $GZIP_EXPORT_FILE_PATH"
-docker cp "$container:/data/export.json.gzip" "$GZIP_EXPORT_FILE_PATH"
+if [ -n "$GZIP_EXPORT_FILE_PATH" ]; then
+    echo "Copying $container_short_id:/data/export.json.gzip -> $GZIP_EXPORT_FILE_PATH"
+    docker cp "$container:/data/export.json.gzip" "$GZIP_EXPORT_FILE_PATH"
+fi
 
 # Tear down the container, now that all expected output files have been copied out successfully
 docker container rm "$container" >/dev/null

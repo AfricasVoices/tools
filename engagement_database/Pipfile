@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 CoreDataModules = {editable = true,git = "https://www.github.com/AfricasVoices/CoreDataModules",ref = "master"}
-PipelineInfrastructure = {editable = true,git = "https://www.github.com/AfricasVoices/Pipeline-Infrastructure",ref = "master"}
+PipelineInfrastructure = {editable = true,git = "https://www.github.com/AfricasVoices/Pipeline-Infrastructure",ref = "backup-support-functions"}
 
 [dev-packages]
 

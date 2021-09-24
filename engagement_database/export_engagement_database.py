@@ -1,6 +1,7 @@
 import argparse
 import gzip
 import json
+import shutil
 
 from core_data_modules.logging import Logger
 from engagement_database import EngagementDatabase
@@ -49,7 +50,7 @@ if __name__ == "__main__":
 
     engagement_db = EngagementDatabase.init_from_credentials(engagement_database_credentials, database_path)
 
-    with open("export.json", "w") as f:
+    with open("export.jsonl", "w") as f:
         log.info(f"Exporting all messages...")
         # Paginate the export because Firestore returns incomplete results when making queries that have a long run time
         total_messages = 0
@@ -76,7 +77,7 @@ if __name__ == "__main__":
         while len(batch_history_entries) > 0:
             # Process this batch by serializing and writing to disk
             total_history_entries += len(batch_history_entries)
-            log.info(f"Fetched {len(batch_history_entries)} history entries in this batch ({total_history_entries} total")
+            log.info(f"Fetched {len(batch_history_entries)} history entries in this batch ({total_history_entries} total)")
 
             for entry in batch_history_entries:
                 json.dump({"type": "history_entry", "data": entry.to_dict(serialize_datetimes_to_str=True)}, f)
@@ -89,18 +90,16 @@ if __name__ == "__main__":
             )
         log.info(f"Exported {total_history_entries} history entries")
 
+    log.info(f"Converting fetched data to zipped json for export...")
+    with open("export.jsonl", "rb") as raw_file, gzip.open("export.jsonl.gzip", "wb") as compressed_file:
+        compressed_file.writelines(raw_file)
 
-    # export = []
-    # for msg in messages:
-    #     export.append({"type": "message", "data": msg.to_dict(serialize_datetimes_to_str=True)})
-    #
-    # log.info(f"Converting fetched data to zipped jsonl for export...")
-    # jsonl_blob = ""
-    # for item in export:
-    #     jsonl_blob += json.dumps(item) + "\n"
-    # export_compressed = gzip.compress(bytes(jsonl_blob, "utf-8"))
-    #
-    # if gzip_export_file_path is not None:
-    #     log.warning(f"Writing export to local disk at '{gzip_export_file_path}'...")
-    #     with open(gzip_export_file_path, "wb") as f:
-    #         f.write(export_compressed)
+    if gzip_export_file_path is not None:
+        log.warning(f"Copying export to local disk at '{gzip_export_file_path}'...")
+        with open(gzip_export_file_path, "wb") as f:
+            shutil.copyfile("export.jsonl.gzip", gzip_export_file_path)
+
+    if gcs_upload_path is not None:
+        log.info(f"Uploading the export to {gcs_upload_path}...")
+        with open("export.jsonl.gzip") as f:
+            google_cloud_utils.upload_file_to_blob(google_cloud_credentials_file_path, gcs_upload_path, f)

@@ -5,9 +5,6 @@ import shutil
 
 from core_data_modules.logging import Logger
 from engagement_database import EngagementDatabase
-from google.cloud import firestore
-from google.cloud.firestore_v1 import DocumentReference
-
 from storage.google_cloud import google_cloud_utils
 
 log = Logger(__name__)

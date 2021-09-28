@@ -52,7 +52,7 @@ if __name__ == "__main__":
         raw_export_path = f"{dir_path}/export.jsonl"
         compressed_export_path = f"{dir_path}/export.jsonl.gzip"
 
-        log.info(f"Exporting data to an uncompressed, temporary file...")
+        log.info(f"Exporting data to an uncompressed, temporary file at '{raw_export_path}'...")
         with open(raw_export_path, "w") as f:
             log.info(f"Exporting all messages...")
             # Paginate the export because Firestore returns incomplete results when making queries that have a long run time
@@ -93,12 +93,12 @@ if __name__ == "__main__":
                 )
             log.info(f"Exported {total_history_entries} history entries")
 
-        log.info(f"Compressing the exported data gzipped jsonl...")
+        log.info(f"Compressing the exported data to a temporary file at '{raw_export_path}'...")
         with open(raw_export_path, "rb") as raw_file, gzip.open(compressed_export_path, "wb") as compressed_file:
             compressed_file.writelines(raw_file)
 
         if gzip_export_file_path is not None:
-            log.warning(f"Copying export to local disk at '{gzip_export_file_path}'...")
+            log.warning(f"Copying the export to local disk at '{gzip_export_file_path}'...")
             with open(gzip_export_file_path, "wb") as f:
                 shutil.copyfile(compressed_export_path, gzip_export_file_path)
 

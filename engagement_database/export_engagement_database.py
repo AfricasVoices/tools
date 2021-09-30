@@ -13,7 +13,8 @@ log = Logger(__name__)
 BATCH_SIZE = 500
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Exports an engagement database to a zipped json file")
+    parser = argparse.ArgumentParser(description="Exports an engagement database to a zipped json file and/or "
+                                                 "Google Cloud Storage")
 
     parser.add_argument("--gzip-export-file-path",
                         help="json.gzip file to write the exported data to")
@@ -25,7 +26,7 @@ if __name__ == "__main__":
     parser.add_argument("engagement_database_credentials_file_url", metavar="engagement-database-credentials-file-url",
                         help="GS URL of the credentials for the Firestore project to export")
     parser.add_argument("database_path", metavar="database-path",
-                        help="Path to the engagement database to export")
+                        help="Path to the engagement database to export e.g. engagement_databases/test")
 
     args = parser.parse_args()
 

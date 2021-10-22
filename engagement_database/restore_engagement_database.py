@@ -65,10 +65,10 @@ if __name__ == "__main__":
     for history_entry in history_entries:
         engagement_db.restore_history_entry(history_entry, transaction=batch)
         batch_size += 1
-        if batch_size > 500:
+        if batch_size >= BATCH_SIZE:
             if not dry_run:
                 batch.commit()
-            restored += 500
+            restored += batch_size
             log.info(f"Restored {restored}/{len(history_entries)} history entries")
             batch = engagement_db.batch()
             batch_size = 0
@@ -97,10 +97,10 @@ if __name__ == "__main__":
         engagement_db.restore_doc(history_entry.updated_doc, history_entry.db_update_path, transaction=batch)
         restored_by_doc_type[history_entry.doc_type] += 1
         batch_size += 1
-        if batch_size > 500:
+        if batch_size >= BATCH_SIZE:
             if not dry_run:
                 batch.commit()
-            restored += 500
+            restored += batch_size
             log.info(f"Restored {restored}/{len(latest_history_entries)} documents from history")
             batch = engagement_db.batch()
             batch_size = 0

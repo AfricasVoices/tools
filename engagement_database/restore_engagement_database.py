@@ -88,6 +88,7 @@ if __name__ == "__main__":
         if history_entry.timestamp > latest_history_entries[doc_path].timestamp:
             latest_history_entries[doc_path] = history_entry
 
+    # Restore the docs in the latest history entries
     batch = engagement_db.batch()
     batch_size = 0
     restored = 0

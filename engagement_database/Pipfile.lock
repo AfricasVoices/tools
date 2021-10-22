@@ -284,7 +284,7 @@
         "pipelineinfrastructure": {
             "editable": true,
             "git": "https://www.github.com/AfricasVoices/Pipeline-Infrastructure",
-            "ref": "0c1f770895cca79f329ac6be2d6a38d37a736512"
+            "ref": "44e89867aafa5c35830268d043f9aba5bbcab4a9"
         },
         "proto-plus": {
             "hashes": [

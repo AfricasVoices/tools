@@ -65,7 +65,7 @@ if __name__ == "__main__":
                 log.info(f"Fetched {len(batch_messages)} messages in this batch ({total_messages} total)")
 
                 for msg in batch_messages:
-                    json.dump({"type": "message", "data": msg.to_dict(serialize_datetimes_to_str=True)}, f)
+                    json.dump({"type": msg.DOC_TYPE, "data": msg.to_dict(serialize_datetimes_to_str=True)}, f)
                     f.write("\n")
 
                 # Fetch the next batch
@@ -84,7 +84,7 @@ if __name__ == "__main__":
                 log.info(f"Fetched {len(batch_history_entries)} history entries in this batch ({total_history_entries} total)")
 
                 for entry in batch_history_entries:
-                    json.dump({"type": "history_entry", "data": entry.to_dict(serialize_datetimes_to_str=True)}, f)
+                    json.dump({"type": entry.DOC_TYPE, "data": entry.to_dict(serialize_datetimes_to_str=True)}, f)
                     f.write("\n")
 
                 # Fetch the next batch

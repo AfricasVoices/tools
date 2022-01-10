@@ -19,6 +19,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Exports an engagement database to a zipped json file and/or "
                                                  "Google Cloud Storage")
 
+    parser.add_argument("--incremental-cache-path",
+                        help="Path to a directory to use to cache the most recently exported items in each collection. "
+                             "If this argument is provided and the cache files exist, this will only export documents "
+                             "modified since the last export.")
     parser.add_argument("--gzip-export-file-path",
                         help="json.gzip file to write the exported data to")
     parser.add_argument("--gcs-upload-path",
@@ -33,7 +37,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    cache_dir = "cache"
+    cache_dir = args.incremental_cache_path
     gzip_export_file_path = args.gzip_export_file_path
     gcs_upload_path = args.gcs_upload_path
     google_cloud_credentials_file_path = args.google_cloud_credentials_file_path

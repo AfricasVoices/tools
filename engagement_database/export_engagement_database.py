@@ -6,7 +6,10 @@ import tempfile
 
 from core_data_modules.logging import Logger
 from engagement_database import EngagementDatabase
+from engagement_database.data_models import Message, HistoryEntry
 from storage.google_cloud import google_cloud_utils
+
+from src.cache import Cache
 
 log = Logger(__name__)
 
@@ -16,6 +19,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Exports an engagement database to a zipped json file and/or "
                                                  "Google Cloud Storage")
 
+    parser.add_argument("--incremental-cache-path",
+                        help="Path to a directory to use to cache the most recently exported items in each collection. "
+                             "If this argument is provided and the cache files exist, this will only export documents "
+                             "modified since the last export.")
     parser.add_argument("--gzip-export-file-path",
                         help="json.gzip file to write the exported data to")
     parser.add_argument("--gcs-upload-path",
@@ -30,6 +37,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    cache_dir = args.incremental_cache_path
     gzip_export_file_path = args.gzip_export_file_path
     gcs_upload_path = args.gcs_upload_path
     google_cloud_credentials_file_path = args.google_cloud_credentials_file_path
@@ -40,6 +48,13 @@ if __name__ == "__main__":
         log.error(f"No output locations specified. Please provide at least one of --gzip-export-file-path or "
                   f"--gcs-upload-path")
         exit(1)
+
+    if cache_dir is None:
+        cache = None
+        log.info("No cache specified, will perform a complete export")
+    else:
+        cache = Cache(cache_dir)
+        log.info(f"Initialised cache at {cache_dir}")
 
     log.info("Downloading Firestore UUID Table credentials...")
     engagement_database_credentials = json.loads(google_cloud_utils.download_blob_to_string(
@@ -54,11 +69,23 @@ if __name__ == "__main__":
         compressed_export_path = f"{dir_path}/export.jsonl.gzip"
 
         log.info(f"Exporting data to an uncompressed, temporary file at '{raw_export_path}'...")
+
         with open(raw_export_path, "w") as f:
             log.info(f"Exporting all messages...")
-            # Paginate the export because Firestore returns incomplete results when making queries that have a long run time
+            last_message = None
+            if cache is not None:
+                last_message = cache.get_doc("last_message", Message)
+
+            message_batch_filter = lambda q: q.order_by("last_updated").order_by("message_id").limit(BATCH_SIZE)
+            if last_message is None:
+                batch_messages = engagement_db.get_messages(firestore_query_filter=message_batch_filter)
+            else:
+                batch_messages = engagement_db.get_messages(
+                    firestore_query_filter=lambda q: message_batch_filter(q).start_after(last_message.to_dict())
+                )
+
+            # Paginate the export because Firestore returns incomplete results when making queries with a long run time
             total_messages = 0
-            batch_messages = engagement_db.get_messages(firestore_query_filter=lambda q: q.order_by("message_id").limit(BATCH_SIZE))
             while len(batch_messages) > 0:
                 # Process this batch by serializing and writing to disk
                 total_messages += len(batch_messages)
@@ -71,13 +98,24 @@ if __name__ == "__main__":
                 # Fetch the next batch
                 last_message = batch_messages[-1]
                 batch_messages = engagement_db.get_messages(
-                    firestore_query_filter=lambda q: q.order_by("message_id").start_after(last_message.to_dict()).limit(BATCH_SIZE)
+                    firestore_query_filter=lambda q: message_batch_filter(q).start_after(last_message.to_dict())
                 )
             log.info(f"Exported {total_messages} messages")
 
             log.info(f"Exporting history...")
+            last_history_entry = None
+            if cache is not None:
+                last_history_entry = cache.get_doc("last_history_entry", HistoryEntry)
+
+            history_batch_filter = lambda q: q.order_by("timestamp").order_by("history_entry_id").limit(BATCH_SIZE)
+            if last_history_entry is None:
+                batch_history_entries = engagement_db.get_history(firestore_query_filter=history_batch_filter)
+            else:
+                batch_history_entries = engagement_db.get_history(
+                    firestore_query_filter=lambda q: history_batch_filter(q).start_after(last_history_entry.to_dict())
+                )
+
             total_history_entries = 0
-            batch_history_entries = engagement_db.get_history(firestore_query_filter=lambda q: q.order_by("history_entry_id").limit(BATCH_SIZE))
             while len(batch_history_entries) > 0:
                 # Process this batch by serializing and writing to disk
                 total_history_entries += len(batch_history_entries)
@@ -88,9 +126,9 @@ if __name__ == "__main__":
                     f.write("\n")
 
                 # Fetch the next batch
-                last_entry = batch_history_entries[-1]
+                last_history_entry = batch_history_entries[-1]
                 batch_history_entries = engagement_db.get_history(
-                    firestore_query_filter=lambda q: q.order_by("history_entry_id").start_after(last_entry.to_dict()).limit(BATCH_SIZE)
+                    firestore_query_filter=lambda q: history_batch_filter(q).start_after(last_history_entry.to_dict())
                 )
             log.info(f"Exported {total_history_entries} history entries")
 
@@ -107,3 +145,13 @@ if __name__ == "__main__":
             log.info(f"Uploading the export to {gcs_upload_path}...")
             with open(compressed_export_path) as f:
                 google_cloud_utils.upload_file_to_blob(google_cloud_credentials_file_path, gcs_upload_path, f)
+
+        # Now that the backup has run successfully and files exported and uploaded, cache the last exported documents
+        # so we have the option to run in incremental mode next time.
+        if cache is not None:
+            if last_message is not None:
+                cache.set_doc("last_message", last_message)
+            if last_message is not None:
+                cache.set_doc("last_history_entry", last_history_entry)
+
+        log.info(f"Done. {total_messages} messages and {total_history_entries} history entries were exported")

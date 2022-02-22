@@ -38,7 +38,7 @@ while true; do
         # Assign a new random id for this full backup, and record the start date using the time now.
         BACKUP_ID=$(uuidgen)
         LAST_FULL_BACKUP_SECONDS="$(date -u +%s)"
-        LAST_FULL_BACKUP_STR=$(date -r "$LAST_FULL_BACKUP_SECONDS" +'%Y_%m_%d__%H_%M_%S_Z')
+        LAST_FULL_BACKUP_STR=$(date -u --date "@$LAST_FULL_BACKUP_SECONDS" +'%Y_%m_%d__%H_%M_%S_Z')
         INCREMENTAL_BACKUP_STR=$LAST_FULL_BACKUP_STR
     else
         echo "Preparing incremental backup"
@@ -57,7 +57,7 @@ while true; do
         "$GOOGLE_CLOUD_CREDENTIALS_FILE_PATH" "$ENGAGEMENT_DATABASE_CREDENTIALS_FILE_URL" "$DATABASE_PATH"
 
     # Sleep until the next incremental backup is due
-    echo "Backup complete at $(date -u). Last full backup was started at $(date -r "$LAST_FULL_BACKUP_SECONDS")"
+    echo "Backup complete at $(date -u). Last full backup was started at $(date -u --date "@$LAST_FULL_BACKUP_SECONDS")"
     echo "Sleeping for $INCREMENTAL_BACKUP_INTERVAL seconds"
     sleep "$INCREMENTAL_BACKUP_INTERVAL"
 done

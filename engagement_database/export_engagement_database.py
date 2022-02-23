@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
         if gcs_upload_path is not None:
             log.info(f"Uploading the export to {gcs_upload_path}...")
-            with open(compressed_export_path) as f:
+            with open(compressed_export_path, "rb") as f:
                 google_cloud_utils.upload_file_to_blob(google_cloud_credentials_file_path, gcs_upload_path, f)
 
         # Now that the backup has run successfully and files exported and uploaded, cache the last exported documents

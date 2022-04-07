@@ -85,6 +85,13 @@ if __name__ == "__main__":
         doc_path = history_entry.db_update_path
         if doc_path not in latest_history_entries:
             latest_history_entries[doc_path] = history_entry
+        else:
+            assert history_entry.timestamp != latest_history_entries[doc_path].timestamp, \
+                f"History entries {history_entry.history_entry_id} and " \
+                f"{latest_history_entries[doc_path].history_entry_id} " \
+                f"(for db_update_path {history_entry.db_update_path}) " \
+                f"have the same timestamp, so cannot tell which snapshot is the latest to restore"
+
         if history_entry.timestamp > latest_history_entries[doc_path].timestamp:
             latest_history_entries[doc_path] = history_entry
 

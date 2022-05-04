@@ -1,0 +1,13 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+CoreDataModules = {editable = true,git = "https://www.github.com/AfricasVoices/CoreDataModules",ref = "v0.16.1"}
+PipelineInfrastructure = {editable = true,git = "https://www.github.com/AfricasVoices/Pipeline-Infrastructure",ref = "list-files-in-drive"}
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"

@@ -18,8 +18,9 @@ log = Logger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Archives messages that are the best matches for each of the messages in the referenced dataset "
-                    "of duplicates"
+        description="Archives messages that are the best matches for each of the messages in the referenced dataset. \n"
+                    "For example, to archive duplicated messages, provide a dataset of known duplicates identified "
+                    "by an external script that searched for identical messages sent very close to each other in time."
     )
 
     parser.add_argument("--dry-run", const=True, default=False, action="store_const")

@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from core_data_modules.logging import Logger
 from engagement_database import EngagementDatabase
-from engagement_database.data_models import HistoryEntry
+from engagement_database.data_models import HistoryEntry, CommandLogEntry
 from storage.google_cloud import google_cloud_utils
 
 log = Logger(__name__)
@@ -45,6 +45,7 @@ if __name__ == "__main__":
     engagement_db = EngagementDatabase.init_from_credentials(engagement_database_credentials, database_path)
 
     history_entries = []
+    command_log_entries = []
     other_docs_count = 0
     log.info(f"Loading data to restore from '{restore_jsonl_file_path}'...")
     with open(restore_jsonl_file_path) as f:
@@ -52,6 +53,8 @@ if __name__ == "__main__":
             d = json.loads(line)
             if d["type"] == HistoryEntry.DOC_TYPE:
                 history_entries.append(HistoryEntry.from_dict(d["data"]))
+            elif d["type"] == CommandLogEntry.DOC_TYPE:
+                command_log_entries.append(CommandLogEntry.from_dict(d["data"]))
             else:
                 # Don't load other docs as we'll restore this directly from the latest history entries
                 other_docs_count += 1
@@ -117,8 +120,30 @@ if __name__ == "__main__":
         restored += batch_size
         log.info(f"Restored {restored}/{len(latest_history_entries)} documents from history")
 
+    # Restore the command log entries
+    log.info(f"Restoring command log entries...")
+    batch = engagement_db.batch()
+    batch_size = 0
+    restored = 0
+    for command_log_entry in command_log_entries:
+        engagement_db.set_command_log_entry(command_log_entry, transaction=batch)
+        batch_size += 1
+        if batch_size >= BATCH_SIZE:
+            if not dry_run:
+                batch.commit()
+            restored += batch_size
+            log.info(f"Restored {restored}/{len(command_log_entries)} command log entries")
+            batch = engagement_db.batch()
+            batch_size = 0
+    if batch_size > 0:
+        if not dry_run:
+            batch.commit()
+        restored += batch_size
+        log.info(f"Restored {restored}/{len(command_log_entries)} command log entries")
+
     log.info("")
     log.info(f"Summary of actions{dry_run_text}:")
     log.info(f"Restored {len(history_entries)} history entries")
+    log.info(f"Restored {len(command_log_entries)} command log entries")
     for doc_type, count in restored_by_doc_type.items():
         log.info(f"Restored {count} {doc_type} documents")

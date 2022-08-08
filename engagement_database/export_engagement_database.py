@@ -6,7 +6,7 @@ import tempfile
 
 from core_data_modules.logging import Logger
 from engagement_database import EngagementDatabase
-from engagement_database.data_models import Message, HistoryEntry
+from engagement_database.data_models import Message, HistoryEntry, CommandLogEntry
 from storage.google_cloud import google_cloud_utils
 
 from src.cache import Cache
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         cache = Cache(cache_dir)
         log.info(f"Initialised cache at {cache_dir}")
 
-    log.info("Downloading Firestore UUID Table credentials...")
+    log.info("Downloading Firestore engagement database credentials...")
     engagement_database_credentials = json.loads(google_cloud_utils.download_blob_to_string(
         google_cloud_credentials_file_path,
         engagement_database_credentials_file_url
@@ -132,6 +132,40 @@ if __name__ == "__main__":
                 )
             log.info(f"Exported {total_history_entries} history entries")
 
+            log.info(f"Exporting all command log entries...")
+            last_command_log_entry = None
+            if cache is not None:
+                last_command_log_entry = cache.get_doc("last_command_log_entry", CommandLogEntry)
+
+            command_log_batch_filter = lambda q: q.order_by("timestamp").limit(BATCH_SIZE)
+            if last_command_log_entry is None:
+                batch_command_log_entries = engagement_db.get_command_log_entries(
+                    firestore_query_filter=command_log_batch_filter
+                )
+            else:
+                batch_command_log_entries = engagement_db.get_command_log_entries(
+                    firestore_query_filter=lambda q: command_log_batch_filter(q).start_after(last_command_log_entry.to_dict())
+                )
+
+            # Paginate the export because Firestore returns incomplete results when making queries with a long run time
+            total_command_log_entries = 0
+            while len(batch_command_log_entries) > 0:
+                # Process this batch by serializing and writing to disk
+                total_command_log_entries += len(batch_command_log_entries)
+                log.info(f"Fetched {len(batch_command_log_entries)} messages in this batch "
+                         f"({total_command_log_entries} total)")
+
+                for entry in batch_command_log_entries:
+                    json.dump({"type": entry.DOC_TYPE, "data": entry.to_dict(serialize_datetimes_to_str=True)}, f)
+                    f.write("\n")
+
+                # Fetch the next batch
+                last_command_log_entry = batch_command_log_entries[-1]
+                batch_command_log_entries = engagement_db.get_command_log_entries(
+                    firestore_query_filter=lambda q: command_log_batch_filter(q).start_after(last_command_log_entry.to_dict())
+                )
+            log.info(f"Exported {total_command_log_entries} command log entries")
+
         log.info(f"Compressing the exported data to a temporary file at '{raw_export_path}'...")
         with open(raw_export_path, "rb") as raw_file, gzip.open(compressed_export_path, "wb") as compressed_file:
             compressed_file.writelines(raw_file)
@@ -153,5 +187,8 @@ if __name__ == "__main__":
                 cache.set_doc("last_message", last_message)
             if last_message is not None:
                 cache.set_doc("last_history_entry", last_history_entry)
+            if last_command_log_entry is not None:
+                cache.set_doc("last_command_log_entry", last_command_log_entry)
 
-        log.info(f"Done. {total_messages} messages and {total_history_entries} history entries were exported")
+        log.info(f"Done. {total_messages} messages, {total_history_entries} history entries, and "
+                 f"{total_command_log_entries} command log entries were exported")

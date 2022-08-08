@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8eb0404b66bfc3583f087cf4139411f216bdd08979315cfd4f38185cdd867405"
+            "sha256": "b593726384497f540595bca6513b8def0d71459931eb61935c008db1d75c1772"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -62,23 +62,20 @@
             "version": "==5.2.0"
         },
         "google-api-core": {
-            "extras": [
-                "grpc"
-            ],
             "hashes": [
                 "sha256:06f7244c640322b508b125903bb5701bebabce8832f85aba9335ec00b3d02edc",
                 "sha256:93c6a91ccac79079ac6bbf8b74ee75db970cc899278b97d53bc012f35908cf50"
             ],
-            "markers": "platform_python_implementation != 'PyPy'",
+            "markers": "python_version >= '3.6'",
             "version": "==2.8.2"
         },
         "google-api-python-client": {
             "hashes": [
-                "sha256:90ebbae53025545b45962c0bc9874640511f35e929df773d034f40d9464c86af",
-                "sha256:9a4085975c134cb7ea0dfbcee3139616d73e3bd42dd0b6503c4a28147b89f606"
+                "sha256:1766c700eee14809ca1f7f52868c937755153289ea77ecdfd73dea6910e9a34d",
+                "sha256:7837094c6d35cc8e680b60ebefe37f117ad521f3b263b0c7a6efa0b2f84cb17a"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==2.54.0"
+            "version": "==2.55.0"
         },
         "google-auth": {
             "hashes": [
@@ -325,7 +322,7 @@
         "pipelineinfrastructure": {
             "editable": true,
             "git": "https://www.github.com/AfricasVoices/Pipeline-Infrastructure",
-            "ref": "88f54479f71f0236ddb9872ca0bde3e75e385379"
+            "ref": "9e3d7ae09b9e98ac41ecda8d47d5b9601e17e58c"
         },
         "proto-plus": {
             "hashes": [
@@ -458,11 +455,11 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:8298d6d56d39be0e3bc13c1c97d133f9b45d797169a0e11cdd0e0489d786f7ec",
-                "sha256:879ba4d1e89654d9769ce13121e0f94310ea32e8d2f8cf587b77c08bbcdb30d6"
+                "sha256:c33ccba33c819596124764c23a97d25f32b28433ba0dedeb77d873a38722c9bc",
+                "sha256:ea6e8fb210b19d950fab93b60c9009226c63a28808bc8386e05301e25883ac0a"
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5' and python_version < '4'",
-            "version": "==1.26.10"
+            "version": "==1.26.11"
         }
     },
     "develop": {}

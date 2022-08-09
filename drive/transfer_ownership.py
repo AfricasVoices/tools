@@ -35,7 +35,7 @@ if __name__ == "__main__":
     objects = drive_client_wrapper.list_all_objects_in_drive()
     log.info(f"Fetched info on {len(objects)} objects")
 
-    objects.sort(key=lambda f: int(f["quotaBytesUsed"]), reversed=True)
+    objects.sort(key=lambda f: int(f["quotaBytesUsed"]))
 
     objects = [obj for obj in objects if object["ownedByMe"]]
     log.info(f"Found {len(objects)} objects ownedByMe")

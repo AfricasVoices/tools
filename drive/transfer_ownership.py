@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     objects.sort(key=lambda f: int(f["quotaBytesUsed"]))
 
-    objects = [obj for obj in objects if object["ownedByMe"]]
+    objects = [obj for obj in objects if obj["ownedByMe"]]
     log.info(f"Found {len(objects)} objects ownedByMe")
  
     log.info(f"Exporting object info to '{jsonl_output_file_path}'...")

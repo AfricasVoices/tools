@@ -38,7 +38,6 @@ if __name__ == "__main__":
     drive_client_wrapper.init_client_from_info(credentials_info)
     drive_client_wrapper.transfer_object_ownership(object_id, new_owner_email_address) 
 
-    '''
     log.info("Fetching info on all objects owned by the service account...")
     objects = drive_client_wrapper.list_all_objects_in_drive()
     log.info(f"Fetched info on {len(objects)} objects")
@@ -47,7 +46,12 @@ if __name__ == "__main__":
 
     objects = [obj for obj in objects if obj["ownedByMe"]]
     log.info(f"Found {len(objects)} objects ownedByMe")
-    
+
+    last_file_id = objects[-1]['id']
+    log.info(f"Attempting to transfer file id: {last_file_id} name: {objects[-1]['name']}")
+    drive_client_wrapper.transfer_object_ownership(last_file_id, new_owner_email_address) 
+
+    '''
     log.info(f"Exporting object info to '{jsonl_output_file_path}'...")
     with open(jsonl_output_file_path, "w") as f:
         for file in objects:

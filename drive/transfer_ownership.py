@@ -36,7 +36,6 @@ if __name__ == "__main__":
         google_drive_credentials_url
     ))
     drive_client_wrapper.init_client_from_info(credentials_info)
-    drive_client_wrapper.transfer_object_ownership(object_id, new_owner_email_address) 
 
     log.info("Fetching info on all objects owned by the service account...")
     objects = drive_client_wrapper.list_all_objects_in_drive()

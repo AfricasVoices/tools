@@ -1,4 +1,4 @@
-FROM python:3.7-slim
+FROM python:3.8-slim
 
 # Install Python tools (git + pipenv)
 RUN apt-get update && apt-get install -y git

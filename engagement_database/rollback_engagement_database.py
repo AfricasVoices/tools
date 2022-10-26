@@ -29,9 +29,9 @@ if __name__ == "__main__":
                         help="Path to a Google Cloud service account credentials file to use to access the "
                              "credentials bucket")
     parser.add_argument("engagement_database_credentials_file_url", metavar="engagement-database-credentials-file-url",
-                        help="GS URL of the credentials for the Firestore project to export")
+                        help="GS URL of the credentials for the Firestore project")
     parser.add_argument("database_path", metavar="database-path",
-                        help="Path to the engagement database to export e.g. engagement_databases/test")
+                        help="Path to the engagement database e.g. engagement_databases/test")
     parser.add_argument("rollback_timestamp_inclusive", metavar="rollback-timestamp-inclusive",
                         help="Timestamp to rollback to, inclusive, as an ISO8601 string")
 

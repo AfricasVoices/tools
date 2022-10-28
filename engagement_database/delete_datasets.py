@@ -41,8 +41,8 @@ if __name__ == "__main__":
         messages = engagement_db.get_messages(firestore_query_filter=messages_filter, batch_size=500)
 
         for msg in messages:
+            engagement_db.delete_doc(f"messages/{msg.message_id}")
+
             history_entries = engagement_db.get_history_for_message(msg.message_id)
             for history_entry in history_entries:
                 engagement_db.delete_doc(f"history/{history_entry.history_entry_id}")
-
-            engagement_db.delete_doc(f"messages/{msg.message_id}")

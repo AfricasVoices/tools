@@ -3,7 +3,6 @@ import json
 
 from core_data_modules.logging import Logger
 from storage.google_cloud import google_cloud_utils
-
 from engagement_database import EngagementDatabase
 
 log = Logger(__name__)

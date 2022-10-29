@@ -31,7 +31,7 @@ if __name__ == "__main__":
     parser.add_argument("engagement_database_credentials_file_url", metavar="engagement-database-credentials-file-url",
                         help="GS URL to the Firestore credentials file")
     parser.add_argument("database_path", metavar="database-path",
-                        help="Path to the engagement database to export e.g. engagement_databases/test")
+                        help="Path to the engagement database to archive messages from e.g. engagement_databases/test")
     parser.add_argument("messages_to_archive_csv_url", metavar="messages-to-archive-csv-url",
                         help="URL to a csv containing messages to archive. For each message in this CSV, the closest "
                              "message in time in the database which has the same participant_uuid and text will be "

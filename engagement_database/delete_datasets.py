@@ -8,6 +8,19 @@ from engagement_database import EngagementDatabase
 
 log = Logger(__name__)
 
+class keyvalue(argparse.Action):
+    """
+    argparse action to split an argument into KEY=VALUE form
+    on the = and append to a dictionary.
+    """
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, dict())
+          
+        for value in values:
+            key, value = value.split('=')
+            getattr(namespace, self.dest)[key] = value
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Deletes messages for given datasets in engagement database")
 

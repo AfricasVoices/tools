@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "7533646a5c76c4b777fe61134f8686cba1e52ce1d6af01c796db420e13350a55"
+            "sha256": "291ff85400b63da0685ab332a064b4a9cc27217ada295e7c0c6b7be675eda43a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -120,11 +120,11 @@
         "codav2pythonclient": {
             "editable": true,
             "git": "https://www.github.com/AfricasVoices/CodaV2PythonClient",
-            "ref": "0782b76018392ed8a29e7b603ae99967f244a2b4"
+            "ref": "79575c17ec1c2d410ab70bdeb7faefec667ef769"
         },
         "coredatamodules": {
             "editable": true,
-            "git": "https://github.com/AfricasVoices/CoreDataModules",
+            "git": "https://www.github.com/AfricasVoices/CoreDataModules",
             "ref": "1d245f430d965bc6acb4b00d3d3babcd8f2cb99f"
         },
         "cryptography": {
@@ -167,12 +167,14 @@
             "version": "==6.0.1"
         },
         "google-api-core": {
-            "extras": [],
+            "extras": [
+                "grpc"
+            ],
             "hashes": [
                 "sha256:10c06f7739fe57781f87523375e8e1a3a4674bf6392cd6131a3222182b971320",
                 "sha256:34f24bd1d5f72a8c4519773d99ca6bf080a6c4e041b4e9f024fe230191dda62e"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "platform_python_implementation != 'PyPy'",
             "version": "==2.10.2"
         },
         "google-api-python-client": {

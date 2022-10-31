@@ -70,8 +70,10 @@ if __name__ == "__main__":
                 assert coda_message is not None
                 coda.delete_dataset_message(coda_dataset, msg.coda_id)
 
+            log.warning(f"Deleting engagement db message with message id {msg.message_id}")
             engagement_db.delete_doc(f"messages/{msg.message_id}")
 
             history_entries = engagement_db.get_history_for_message(msg.message_id)
+            log.warning(f"Deleting {len(history_entries)} engagement db message's history entries")
             for history_entry in history_entries:
                 engagement_db.delete_doc(f"history/{history_entry.history_entry_id}")

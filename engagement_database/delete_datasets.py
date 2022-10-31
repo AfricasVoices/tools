@@ -28,11 +28,14 @@ if __name__ == "__main__":
                         help="Path to a Google Cloud service account credentials file to use to access the "
                              "credentials bucket")
     parser.add_argument("engagement_database_credentials_file_url", metavar="engagement-database-credentials-file-url",
-                        help="GS URL of the credentials for the Firestore project")
+                        help="GS URL to the Firestore credentials file")
     parser.add_argument("database_path", metavar="database-path",
                         help="Path to the engagement database e.g. engagement_databases/test")
-    parser.add_argument("engagement_db_datasets", nargs="+", metavar="engagement-db-datasets",
-                        help="List of engagement database datasets to delete")
+    parser.add_argument("coda_credentials_file_url", metavar="coda-credentials-file-url",
+                        help="GS URL to the Firestore credentials file")
+    parser.add_argument("engagement_db_to_coda_dataset", nargs="*", metavar="engagement-db-to-coda-dataset",
+                        action=keyvalue, help="Key-value pair e.g. gender/TEST_gender where the key is the engagement db " 
+                                              "dataset and the value is the coda dataset")
 
     args = parser.parse_args()
 

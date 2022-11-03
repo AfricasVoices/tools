@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("engagement_database_credentials_file_url", metavar="engagement-database-credentials-file-url",
                         help="GS URL to the Engagement firestore database credentials file")
     parser.add_argument("database_path", metavar="database-path",
-                        help="Path to the engagement database e.g. engagement_databases/test")
+                        help="Path to the engagement database to delete messages and history from e.g. engagement_databases/test")
     parser.add_argument("engagement_db_datasets", nargs="+", metavar="engagement-db-datasets",
                         help="Engagement database datasets to delete")
 

@@ -45,8 +45,9 @@ if __name__ == "__main__":
         messages_filter = lambda q: q.where("dataset", "==", engagement_db_dataset)
         messages = engagement_db.get_messages(firestore_query_filter=messages_filter, batch_size=500)
 
-        for msg in messages:
-            log.warning(f"Deleting engagement db message with message id {msg.message_id}")
+        log.info(f"Downloaded {len(messages)} messages")
+        for index, msg in enumerate(messages):
+            log.warning(f"Deleting engagement db message {index+1}/{len(messages)} with message id {msg.message_id}")
             if not dry_run:
                 engagement_db.delete_doc(f"messages/{msg.message_id}")
 

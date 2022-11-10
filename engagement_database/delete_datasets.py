@@ -7,6 +7,8 @@ from engagement_database import EngagementDatabase
 
 log = Logger(__name__)
 
+BATCH_SIZE = 500
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Deletes messages for given datasets in engagement database")
 
@@ -49,16 +51,16 @@ if __name__ == "__main__":
         batch = engagement_db.batch()
         batch_size = 0
         for count, msg in enumerate(messages, start=1):
-            engagement_db.delete_message_and_history(self, msg.message_id, transaction=batch)
+            engagement_db.delete_message_and_history(msg.message_id, transaction=batch)
             batch_size += 1
             if batch_size >= BATCH_SIZE:
                 if not dry_run:
                     batch.commit()
-                log.info(f"Deleted engagement db message {count}/{len(messages)} with message id {msg.message_id} and its history entries")
+                log.info(f"Deleted engagement db messages {count}/{len(messages)} and its history entries")
                 batch = engagement_db.batch()
                 batch_size = 0
 
         if batch_size > 0:
             if not dry_run:
                 batch.commit()
-        log.info(f"Deleted engagement db message {count}/{len(messages)} with message id {msg.message_id} and its history entries")
+        log.info(f"Deleted engagement db messages {count}/{len(messages)} and its history entries")

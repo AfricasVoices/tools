@@ -43,17 +43,22 @@ if __name__ == "__main__":
 
     for engagement_db_dataset in engagement_db_datasets:
         messages_filter = lambda q: q.where("dataset", "==", engagement_db_dataset)
-        messages = engagement_db.get_messages(firestore_query_filter=messages_filter, batch_size=500)
-
+        messages = engagement_db.get_messages(firestore_query_filter=messages_filter, batch_size=BATCH_SIZE)
         log.info(f"Downloaded {len(messages)} messages")
-        for index, msg in enumerate(messages):
-            log.warning(f"Deleting engagement db message {index+1}/{len(messages)} with message id {msg.message_id}")
-            if not dry_run:
-                engagement_db.delete_doc(f"messages/{msg.message_id}")
 
-            history_entries = engagement_db.get_history_for_message(msg.message_id)
-            log.warning(f"Found {len(history_entries)} engagement db message's history entries")
-            for history_entry in history_entries:
-                log.warning(f"Deleting history entry with id {history_entry.history_entry_id}")
+        batch = engagement_db.batch()
+        batch_size = 0
+        for count, msg in enumerate(messages, start=1):
+            engagement_db.delete_message_and_history(self, msg.message_id, transaction=batch)
+            batch_size += 1
+            if batch_size >= BATCH_SIZE:
                 if not dry_run:
-                    engagement_db.delete_doc(f"history/{history_entry.history_entry_id}")
+                    batch.commit()
+                log.info(f"Deleted engagement db message {count}/{len(messages)} with message id {msg.message_id} and its history entries")
+                batch = engagement_db.batch()
+                batch_size = 0
+
+        if batch_size > 0:
+            if not dry_run:
+                batch.commit()
+        log.info(f"Deleted engagement db message {count}/{len(messages)} with message id {msg.message_id} and its history entries")

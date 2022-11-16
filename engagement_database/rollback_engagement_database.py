@@ -57,7 +57,8 @@ if __name__ == "__main__":
 
     log.info(f"Fetching history entries modified on or since {rollback_timestamp_inclusive} that need rollback...")
     history_entries_to_rollback = engagement_db.get_history(
-        firestore_query_filter=lambda q: q.where("timestamp", ">=", rollback_timestamp_inclusive))
+        firestore_query_filter=lambda q: q.where("timestamp", ">=", rollback_timestamp_inclusive)
+                                          .where("updated_doc.channel_operator", "==", "google_form"))
     log.info(f"Fetched {len(history_entries_to_rollback)} history entries to rollback")
 
     db_update_path_to_history_entries = defaultdict(list)

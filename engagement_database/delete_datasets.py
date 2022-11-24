@@ -46,7 +46,7 @@ if __name__ == "__main__":
     for engagement_db_dataset in engagement_db_datasets:
         messages_filter = lambda q: q.where("dataset", "==", engagement_db_dataset)
         messages = engagement_db.get_messages(firestore_query_filter=messages_filter, batch_size=BATCH_SIZE)
-        log.info(f"Downloaded {len(messages)} messages")
+        log.info(f"Downloaded {len(messages)} messages from dataset {engagement_db_dataset}")
 
         batch = engagement_db.batch()
         batch_size = 0

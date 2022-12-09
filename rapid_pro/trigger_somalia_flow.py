@@ -96,6 +96,8 @@ if __name__ == "__main__":
     urns = load_urns(urn_json_file_path)
     flow_id = rapid_pro.get_flow_id(flow_name)
 
+    start_date = datetime.utcnow()
+
     for i, urn in enumerate(urns):
         log.info(f"Processing URN {i + 1}/{len(urns)}...")
         current_time = get_current_time()
@@ -110,4 +112,7 @@ if __name__ == "__main__":
         log.debug(f"Sleeping for {trigger_interval_seconds} seconds before triggering the next participant")
         sleep(trigger_interval_seconds)
 
-    log.info("Done")
+    end_date = datetime.utcnow()
+    run_time = end_date - start_date
+
+    log.info(f"Done. Triggered to {len(urns)} urns. Took {run_time}.")

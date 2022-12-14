@@ -2,12 +2,18 @@ import argparse
 import json
 
 from core_data_modules.logging import Logger
+from google.cloud import firestore
 from storage.google_cloud import google_cloud_utils
 from engagement_database import EngagementDatabase
 
 log = Logger(__name__)
 
 BATCH_SIZE = 500
+
+
+@firestore.transactional
+def update_in_transaction(transaction, message_id):
+    engagement_db.delete_message_and_history(message_id, transaction=transaction)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Deletes messages for given datasets in engagement database")

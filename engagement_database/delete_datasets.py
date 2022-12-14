@@ -52,5 +52,3 @@ if __name__ == "__main__":
             if not dry_run:
                 engagement_db.delete_message_and_history(msg.message_id, transaction=engagement_db.transaction())
             log.info(f"Deleted engagement db messages {count}/{len(messages)} and its history entries")
-        
-        log.info(f"Deleted engagement db messages {count}/{len(messages)} and its history entries")

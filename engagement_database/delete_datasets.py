@@ -48,19 +48,9 @@ if __name__ == "__main__":
         messages = engagement_db.get_messages(firestore_query_filter=messages_filter, batch_size=BATCH_SIZE)
         log.info(f"Downloaded {len(messages)} messages from dataset {engagement_db_dataset}")
 
-        batch = engagement_db.batch()
-        batch_size = 0
         for count, msg in enumerate(messages, start=1):
-            engagement_db.delete_message_and_history(msg.message_id, transaction=batch)
-            batch_size += 1
-            if batch_size >= BATCH_SIZE:
-                if not dry_run:
-                    batch.commit()
-                log.info(f"Deleted engagement db messages {count}/{len(messages)} and its history entries")
-                batch = engagement_db.batch()
-                batch_size = 0
-
-        if batch_size > 0:
             if not dry_run:
-                batch.commit()
+                engagement_db.delete_message_and_history(msg.message_id)
+            log.info(f"Deleted engagement db messages {count}/{len(messages)} and its history entries")
+        
         log.info(f"Deleted engagement db messages {count}/{len(messages)} and its history entries")

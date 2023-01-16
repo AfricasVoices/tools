@@ -65,6 +65,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Triggers a flow to the specified URNs, one at a time, while "
                                                  "automatically excluding bad time ranges for Somalia")
 
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Logs the flows that would be triggered without actually triggering anything")
     parser.add_argument("google_cloud_credentials_file_path", metavar="google-cloud-credentials-file-path",
                         help="Path to a Google Cloud service account credentials file to use to access the "
                              "credentials bucket")
@@ -80,12 +82,16 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    dry_run = args.dry_run
     google_cloud_credentials_file_path = args.google_cloud_credentials_file_path
     rapid_pro_domain = args.rapid_pro_domain
     rapid_pro_token_file_url = args.rapid_pro_token_file_url
     flow_name = args.flow_name
     urn_json_file_path = args.urn_json_file_path
     trigger_interval_seconds = args.trigger_interval_seconds
+
+    dry_run_text = " (dry run)" if dry_run else ""
+    log.info(f"Triggering flow {flow_name}{dry_run_text}")
 
     # Initialise Rapid Pro client
     rapid_pro_token = google_cloud_utils.download_blob_to_string(
@@ -108,11 +114,14 @@ if __name__ == "__main__":
             sleep(60 * 5)
             current_time = get_current_time()
 
-        start_rapid_pro_flow_for_urn(rapid_pro, flow_id, urn)
+        if not dry_run:
+            start_rapid_pro_flow_for_urn(rapid_pro, flow_id, urn)
+
         log.debug(f"Sleeping for {trigger_interval_seconds} seconds before triggering the next participant")
-        sleep(trigger_interval_seconds)
+        if not dry_run:
+            sleep(trigger_interval_seconds)
 
     end_date = datetime.utcnow()
     run_time = end_date - start_date
 
-    log.info(f"Done. Triggered to {len(urns)} urns. Took {run_time}.")
+    log.info(f"Done{dry_run_text}. Triggered to {len(urns)} urns. Took {run_time}.")

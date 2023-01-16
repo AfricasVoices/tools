@@ -66,7 +66,8 @@ if __name__ == "__main__":
                                                  "automatically excluding bad time ranges for Somalia")
 
     parser.add_argument("--dry-run", action="store_true",
-                        help="Logs the flows that would be triggered without actually triggering anything")
+                        help="Logs what would be triggered without actually triggering anything. This flag only "
+                             "applies to the triggers themselves, and does not affect sleep calls")
     parser.add_argument("google_cloud_credentials_file_path", metavar="google-cloud-credentials-file-path",
                         help="Path to a Google Cloud service account credentials file to use to access the "
                              "credentials bucket")
@@ -118,8 +119,7 @@ if __name__ == "__main__":
             start_rapid_pro_flow_for_urn(rapid_pro, flow_id, urn)
 
         log.debug(f"Sleeping for {trigger_interval_seconds} seconds before triggering the next participant")
-        if not dry_run:
-            sleep(trigger_interval_seconds)
+        sleep(trigger_interval_seconds)
 
     end_date = datetime.utcnow()
     run_time = end_date - start_date

@@ -39,7 +39,7 @@ if __name__ == "__main__":
     engagement_db_datasets = args.engagement_db_datasets
 
     dry_run_text = "(dry run)" if dry_run else ""
-    log.info(f"Deletes messages in engagement database by given datasets {dry_run_text}")
+    log.info(f"Deleting engagement database messages in {n} datasets {dry_run_text}")
 
     log.info("Downloading Firestore engagement database credentials...")
     engagement_database_credentials = json.loads(google_cloud_utils.download_blob_to_string(

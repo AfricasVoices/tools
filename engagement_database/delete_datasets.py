@@ -12,7 +12,7 @@ BATCH_SIZE = 500
 
 
 @firestore.transactional
-def update_in_transaction(transaction, message_id):
+def delete_message_and_history(transaction, message_id):
     engagement_db.delete_message_and_history(message_id, transaction=transaction)
 
 if __name__ == "__main__":

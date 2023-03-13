@@ -39,7 +39,7 @@ if __name__ == "__main__":
     engagement_db_datasets = args.engagement_db_datasets
 
     dry_run_text = "(dry run)" if dry_run else ""
-    log.info(f"Deleting engagement database messages in {n} datasets {dry_run_text}")
+    log.info(f"Deleting engagement database messages in {len(engagement_db_datasets)} dataset(s) {dry_run_text}")
 
     log.info("Downloading Firestore engagement database credentials...")
     engagement_database_credentials = json.loads(google_cloud_utils.download_blob_to_string(
@@ -56,6 +56,6 @@ if __name__ == "__main__":
         log.info(f"Downloaded {len(messages)} messages from dataset {engagement_db_dataset}")
 
         for count, msg in enumerate(messages, start=1):
+            log.info(f"Deleting engagement db message {count}/{len(messages)} with id {msg.message_id} and its history entries")
             if not dry_run:
-                update_in_transaction(transaction, msg.message_id)
-            log.info(f"Deleted engagement db messages {count}/{len(messages)} and its history entries")
+                delete_message_and_history(transaction, msg.message_id)

@@ -28,7 +28,7 @@ if __name__ == "__main__":
     parser.add_argument("database_path", metavar="database-path",
                         help="Path to the engagement database to delete messages and history from e.g. engagement_databases/test")
     parser.add_argument("engagement_db_datasets", nargs="+", metavar="engagement-db-datasets",
-                        help="Engagement database datasets to delete")
+                        help="One or more engagement db datasets to delete (pass one or more datasets separated by spaces)")
 
     args = parser.parse_args()
 

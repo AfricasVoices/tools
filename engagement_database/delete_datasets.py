@@ -48,7 +48,6 @@ if __name__ == "__main__":
     ))
 
     engagement_db = EngagementDatabase.init_from_credentials(engagement_database_credentials, database_path)
-    transaction = engagement_db.transaction()
 
     for engagement_db_dataset in engagement_db_datasets:
         messages_filter = lambda q: q.where("dataset", "==", engagement_db_dataset)
@@ -58,4 +57,4 @@ if __name__ == "__main__":
         for count, msg in enumerate(messages, start=1):
             log.info(f"Deleting engagement db message {count}/{len(messages)} with id {msg.message_id} and its history entries")
             if not dry_run:
-                delete_message_and_history(transaction, msg.message_id)
+                delete_message_and_history(engagement_db.transaction(), msg.message_id)

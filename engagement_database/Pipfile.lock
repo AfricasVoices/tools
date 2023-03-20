@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "5f5ab881479c3b20288bc9953c4a1afc1a1933e59eb964c4913a403fea2081f5"
+            "sha256": "e082c6d7e0fa3e6bb83eadcb43a07550bec1ef7eba42807f68076f91098bd56a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -187,13 +187,13 @@
                 "sha256:f8303414c7b03f794347ad062c0516cee0e15f7a612abd0ce1e25caf6ceb47df",
                 "sha256:fca62a8301b605b954ad2e9c3666f9d97f63872aa4efcae5492baca2056b74ab"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==3.1.0"
         },
         "coredatamodules": {
             "editable": true,
-            "git": "https://www.github.com/AfricasVoices/CoreDataModules",
-            "ref": "1d245f430d965bc6acb4b00d3d3babcd8f2cb99f"
+            "git": "https://github.com/AfricasVoices/CoreDataModules",
+            "ref": "c78a007c52b118374c1ddc99f3123065023b73df"
         },
         "cryptography": {
             "hashes": [
@@ -228,15 +228,18 @@
                 "sha256:3daa806d16a35d83a809a70a325f973ba9dc242601fe69cd68e6f54a6ffdcd57",
                 "sha256:52e13e393c9d3dc6237f2c376b8e55aacdaaeebe455c0b7e8cfbf35b6491e19d"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==6.1.0"
         },
         "google-api-core": {
+            "extras": [
+                "grpc"
+            ],
             "hashes": [
                 "sha256:4b9bb5d5a380a0befa0573b302651b8a9a89262c1730e37bf423cec511804c22",
                 "sha256:ce222e27b0de0d7bc63eb043b956996d6dccab14cc3b690aaea91c9cc99dc16e"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==2.11.0"
         },
         "google-api-python-client": {
@@ -244,7 +247,7 @@
                 "sha256:8faab0b9b19d3797b455d33320c643253b6761fd0d3f3adb54792ab155d0795a",
                 "sha256:ad6700ae3a76ead8956d7f30935978cea308530e342ad8c1e26a4e40fc05c054"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==2.81.0"
         },
         "google-auth": {
@@ -267,7 +270,7 @@
                 "sha256:8417acf6466be2fa85123441696c4badda48db314c607cf1e5d543fa8bdc22fe",
                 "sha256:b9529ee7047fd8d4bf4a2182de619154240df17fbe60ead399078c1ae152af9a"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==2.3.2"
         },
         "google-cloud-firestore": {
@@ -275,7 +278,7 @@
                 "sha256:434e7cf9a86137b17a637cdff352596c48b7d4e715e2410b1676395d87b5c02c",
                 "sha256:882c180598567e17b26133a6d884085ebdce5f2a22e0558dca4cf36d657ee706"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==2.10.0"
         },
         "google-cloud-storage": {
@@ -283,7 +286,7 @@
                 "sha256:1ac2d58d2d693cb1341ebc48659a3527be778d9e2d8989697a2746025928ff17",
                 "sha256:f78a63525e72dd46406b255bbdf858a22c43d6bad8dc5bdeb7851a42967e95a1"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==2.7.0"
         },
         "google-crc32c": {
@@ -357,7 +360,7 @@
                 "sha256:fd8536e902db7e365f49e7d9029283403974ccf29b13fc7028b97e2295b33556",
                 "sha256:fe70e325aa68fa4b5edf7d1a4b6f691eb04bbccac0ace68e34820d283b5f80d4"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==1.5.0"
         },
         "google-resumable-media": {
@@ -365,7 +368,7 @@
                 "sha256:15b8a2e75df42dc6502d1306db0bce2647ba6013f9cd03b6e17368c0886ee90a",
                 "sha256:831e86fd78d302c1a034730a0c6e5369dd11d37bad73fa69ca8998460d5bae8d"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==2.4.1"
         },
         "googleapis-common-protos": {
@@ -373,7 +376,7 @@
                 "sha256:c727251ec025947d545184ba17e3578840fc3a24a0516a020479edab660457df",
                 "sha256:ca3befcd4580dab6ad49356b46bf165bb68ff4b32389f028f1abd7c10ab9519a"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==1.58.0"
         },
         "grpcio": {
@@ -527,7 +530,7 @@
         "pipelineinfrastructure": {
             "editable": true,
             "git": "https://www.github.com/AfricasVoices/Pipeline-Infrastructure",
-            "ref": "09e217f827782e72bcb31b3345b007ffffd2ef95"
+            "ref": "ebb9da3d4b9a3506c6a87a0f03cb0ec8cff91ed0"
         },
         "proto-plus": {
             "hashes": [
@@ -553,7 +556,7 @@
                 "sha256:dce7a55d501c31ecf688adb2f6c3f763cf11bc0be815d1946a84d74772ab07a7",
                 "sha256:e3fb58076bdb550e75db06ace2a8b3879d4c4f7ec9dd86e4254656118f4a78d7"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==4.22.1"
         },
         "pyasn1": {
@@ -607,7 +610,7 @@
                 "sha256:69285c7e31fc44f68a1feb309e948e0df53259d579295e6cfe2b1792329f05fd",
                 "sha256:d83c3d892a77bbb74d3e1a2cfa90afaadb60945205d1095d9221f04466f64c14"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==2.6.0"
         },
         "pyparsing": {
@@ -638,7 +641,7 @@
                 "sha256:64299f4909223da747622c030b781c0d7811e359c37124b4bd368fb8c6518baa",
                 "sha256:98b1b2782e3c6c4904938b84c0eb932721069dfdb9134313beff7c83c2df24bf"
             ],
-            "markers": "python_version >= '3.7' and python_version < '4'",
+            "markers": "python_version < '4' and python_full_version >= '3.7.0'",
             "version": "==2.28.2"
         },
         "rsa": {

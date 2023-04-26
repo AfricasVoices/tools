@@ -112,7 +112,7 @@ if __name__ == "__main__":
         current_time = pytz.utc.localize(datetime.utcnow())
         while current_time < start_date_time:
             time_until_start = start_date_time - current_time
-            print(f"Waiting until '{start_date_time}' to trigger the flow, in {time_until_start}. "
+            log.info(f"Waiting until '{start_date_time}' to trigger the flow, in {time_until_start}. "
                   f"Checking again in 5 minutes...")
             sleep(60 * 5)
             current_time = pytz.utc.localize(datetime.utcnow())

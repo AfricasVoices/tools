@@ -5,6 +5,7 @@ from time import sleep
 
 import pytz
 from core_data_modules.logging import Logger
+from dateutil.parser import isoparse
 from storage.google_cloud import google_cloud_utils
 from rapid_pro_tools.rapid_pro_client import RapidProClient
 
@@ -68,6 +69,8 @@ if __name__ == "__main__":
     parser.add_argument("--dry-run", action="store_true",
                         help="Logs what would be triggered without actually triggering anything. This flag only "
                              "applies to the triggers themselves, and does not affect sleep calls")
+    parser.add_argument("--start-date-time",
+                        help="Datetime to start triggering the advert after, in ISO 8601 datetime format")
     parser.add_argument("google_cloud_credentials_file_path", metavar="google-cloud-credentials-file-path",
                         help="Path to a Google Cloud service account credentials file to use to access the "
                              "credentials bucket")
@@ -84,6 +87,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     dry_run = args.dry_run
+    start_date_time = None if args.start_date_time is None else isoparse(args.start_date_time)
     google_cloud_credentials_file_path = args.google_cloud_credentials_file_path
     rapid_pro_domain = args.rapid_pro_domain
     rapid_pro_token_file_url = args.rapid_pro_token_file_url
@@ -102,6 +106,16 @@ if __name__ == "__main__":
     allowed_time_ranges = get_allowed_time_ranges()
     urns = load_urns(urn_json_file_path)
     flow_id = rapid_pro.get_flow_id(flow_name)
+
+    # Wait until the start datetime, if specified.
+    if start_date_time is not None:
+        current_time = pytz.utc.localize(datetime.utcnow())
+        while current_time < start_date_time:
+            time_until_start = start_date_time - current_time
+            log.info(f"Waiting until '{start_date_time}' to trigger the flow, in {time_until_start}. "
+                     f"Checking again in 5 minutes...")
+            sleep(60 * 5)
+            current_time = pytz.utc.localize(datetime.utcnow())
 
     start_date = datetime.utcnow()
 

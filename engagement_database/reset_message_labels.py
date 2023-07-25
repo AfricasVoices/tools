@@ -39,7 +39,7 @@ if __name__ == "__main__":
                         help="Path to a Google Cloud service account credentials file to use to access the "
                              "credentials bucket")
     parser.add_argument("engagement_database_credentials_file_url", metavar="engagement-database-credentials-file-url",
-                        help="GS URL of the credentials for the Firestore project to export")
+                        help="GS URL to the Firestore credentials file for the engagement database")
     parser.add_argument("database_path", metavar="database-path",
                         help="Path to the engagement database to export e.g. engagement_databases/test")
     parser.add_argument("message_id", metavar="message-id",

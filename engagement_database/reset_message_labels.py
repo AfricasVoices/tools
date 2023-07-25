@@ -10,8 +10,6 @@ from storage.google_cloud import google_cloud_utils
 
 log = Logger(__name__)
 
-BATCH_SIZE = 500
-
 
 @firestore.transactional
 def reset_message_labels(transaction, engagement_db, message_id, dry_run=False):

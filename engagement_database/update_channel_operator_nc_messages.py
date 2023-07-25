@@ -106,7 +106,7 @@ if __name__ == "__main__":
     uuid_table = FirestoreUuidTable.init_from_credentials(
         firestore_uuid_table_credentials,
         uuid_table_name,
-        "avf-participant-uuid-"
+        uuid_prefix
     )
     log.info("Initialised the Firestore UUID table")
 

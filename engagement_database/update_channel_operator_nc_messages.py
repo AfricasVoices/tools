@@ -71,7 +71,7 @@ if __name__ == "__main__":
     parser.add_argument("uuid_table_name", metavar="uuid-table-name",
                         help="Name of the uuid table to use to re-identify a participant")
     parser.add_argument("uuid_prefix", metavar="uuid-prefix",
-                        help="")
+                        help="UUID prefix for the uuid_table")
 
     args = parser.parse_args()
 

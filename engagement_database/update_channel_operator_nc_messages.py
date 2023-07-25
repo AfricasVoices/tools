@@ -16,7 +16,7 @@ BATCH_SIZE = 500
 
 
 @firestore.transactional
-def update_next_message_with_operator_nc(transaction, engagement_db, previous_message=None):
+def update_next_message_with_operator_nc(transaction, engagement_db, uuid_table, previous_message=None):
     if previous_message is None:
         query_filter = lambda q: q.order_by("last_updated").order_by("message_id") \
             .where("channel_operator", "==", Codes.NOT_CODED) \
@@ -115,11 +115,11 @@ if __name__ == "__main__":
 
     log.info(f"Updating messages labelled with channel_operator {Codes.NOT_CODED}{dry_run_text}...")
     total_messages = 0
-    msg = update_next_message_with_operator_nc(engagement_db.transaction(), engagement_db)
+    msg = update_next_message_with_operator_nc(engagement_db.transaction(), engagement_db, uuid_table)
     while msg is not None:
         total_messages += 1
         log.info(f"Processed {total_messages} messages so far")
-        msg = update_next_message_with_operator_nc(engagement_db.transaction(), engagement_db, msg)
+        msg = update_next_message_with_operator_nc(engagement_db.transaction(), engagement_db, uuid_table, msg)
 
     if not dry_run:
         engagement_db.set_command_log_entry(CommandLogEntry(status=CommandStatuses.COMPLETED_SUCCESSFULLY))

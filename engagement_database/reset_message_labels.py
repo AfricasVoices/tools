@@ -41,7 +41,7 @@ if __name__ == "__main__":
     parser.add_argument("engagement_database_credentials_file_url", metavar="engagement-database-credentials-file-url",
                         help="GS URL to the Firestore credentials file for the engagement database")
     parser.add_argument("database_path", metavar="database-path",
-                        help="Path to the engagement database to export e.g. engagement_databases/test")
+                        help="Path to the engagement database to update e.g. engagement_databases/test")
     parser.add_argument("message_id", metavar="message-id",
                         help="Id of message to reset labels for")
 

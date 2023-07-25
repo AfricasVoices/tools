@@ -69,7 +69,7 @@ if __name__ == "__main__":
     parser.add_argument("uuid_table_credentials_url", metavar="uuid-table-credentials-url",
                         help="GS URL to the Firebase credentials file to use for the uuid table")
     parser.add_argument("uuid_table_name", metavar="uuid-table-name",
-                        help="")
+                        help="Name of the uuid table to use to re-identify a participant")
     parser.add_argument("uuid_prefix", metavar="uuid-prefix",
                         help="")
 

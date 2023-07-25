@@ -2,12 +2,10 @@ import argparse
 import json
 import subprocess
 
-from core_data_modules.cleaners import Codes, URNCleaner
 from core_data_modules.logging import Logger
 from engagement_database import EngagementDatabase
 from engagement_database.data_models import HistoryEntryOrigin, CommandLogEntry, CommandStatuses
 from google.cloud import firestore
-from id_infrastructure.firestore_uuid_table import FirestoreUuidTable
 from storage.google_cloud import google_cloud_utils
 
 log = Logger(__name__)

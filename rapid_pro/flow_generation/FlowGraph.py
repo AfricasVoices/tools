@@ -40,21 +40,6 @@ class FlowGraph:
             "type": "messaging",
             "revision": 1,
             "nodes": [self._nodes[0].to_rapid_pro_dict()],
-            "_ui": {
-                "stickies": {},
-                "nodes": {
-                    self._nodes[0]._uuid: {
-                        "type": "wait_for_response",
-                        "position": {
-                            "left": 320,
-                            "top": 20,
-                        },
-                        "config": {
-                            "cases": {}
-                        }
-                    }
-                }
-            }
         }
 
 

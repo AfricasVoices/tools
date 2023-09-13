@@ -13,7 +13,6 @@ class DefinitionFile:
     def to_rapid_pro_dict(self):
         return {
             "version": "13",
-            "site": "https://textit.com",
             "flows": [flow_graph.to_rapid_pro_dict() for flow_graph in self._flow_graphs],
             "campaigns": [],
             "triggers": [],

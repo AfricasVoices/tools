@@ -7,6 +7,13 @@ def generate_rapid_pro_uuid():
 
 
 class DefinitionFile:
+    """
+    Represents a Rapid Pro definition file, which can be exported and uploaded to Rapid Pro via its UI.
+
+    :param flow_graphs: FlowGraphs in this definition file.
+    :type flow_graphs: list of FlowGraph
+    """
+
     def __init__(self, flow_graphs):
         self._flow_graphs = flow_graphs
 
@@ -22,6 +29,18 @@ class DefinitionFile:
 
 
 class FlowGraph:
+    """
+    Represents a Rapid Pro flow.
+
+    :param name: Name of this flow.
+    :type name: str
+    :param primary_language: ISO-639-3 language code for the primary language e.g. "eng". This is the language to
+                             use for editing flows, not the language to be used in messaging.
+    :type primary_language: str
+    :param start_node: The start node in the flow graph. This node is visited first when a flow is triggered.
+    :type start_node: FlowNode
+    """
+
     def __init__(self, name, primary_language, start_node):
         self._uuid = generate_rapid_pro_uuid()
         self._name = name
@@ -46,10 +65,30 @@ class FlowNode(abc.ABC):
     def __init__(self):
         self._uuid = generate_rapid_pro_uuid()
 
+    def to_rapid_pro_dict(self):
+        pass
+
 
 class WaitForResponseNode(FlowNode):
-    def __init__(self, result_name, opt_out_detectors):
+    """
+    Represents a Rapid Pro "wait for response" node.
+
+    Note that not all options available in Rapid Pro are available here.
+
+    :param result_name: Rapid Pro flow variable to save the response text to.
+                        This variable can be used to find the result in Rapid Pro exports and in its runs API.
+    :type result_name: str
+    :param opt_out_detectors: Opt out detectors to use to automatically identify an opt-out message.
+                              If None, performs no automatic opt-out detection.
+    :type opt_out_detectors: list of OptOutDetector | None
+    """
+
+    def __init__(self, result_name, opt_out_detectors=None):
         super().__init__()
+
+        if opt_out_detectors is None:
+            opt_out_detectors = []
+
         self._result_name = result_name
         self._opt_out_detectors = opt_out_detectors
 
@@ -108,6 +147,13 @@ class OptOutDetector(abc.ABC):
 
 
 class RegexOptOutDetector(OptOutDetector):
+    """
+    Detects opt-outs using a regex.
+
+    :param regex: Python regex to test responses against.
+    :type regex: str
+    """
+
     def __init__(self, regex):
         super().__init__()
         self._regex = regex
@@ -122,6 +168,13 @@ class RegexOptOutDetector(OptOutDetector):
 
 
 class ExactMatchOptOutDetector(OptOutDetector):
+    """
+    Detects opt-outs by checking for an exact match with the test string.
+
+    :param exact_phrase: Exact string to test responses against.
+    :type exact_phrase: str
+    """
+
     def __init__(self, exact_phrase):
         super().__init__()
         self._exact_phrase = exact_phrase

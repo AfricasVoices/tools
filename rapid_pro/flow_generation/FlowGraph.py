@@ -62,11 +62,29 @@ class FlowGraph:
 
 
 class FlowNode(abc.ABC):
-    def __init__(self):
+    """
+    Represents an abstract node in a flow graph.
+
+    :param default_exit: The node to go to after this one, in the default case.
+                         All FlowNodes have a default exit; some may define additional, conditional exits too.
+                         If None, this FlowNode is at the end of a branch and no additional nodes will be visited after
+                         this one.
+    :type default_exit: FlowNode | None
+    """
+
+    def __init__(self, default_exit=None):
         self._uuid = generate_rapid_pro_uuid()
+        self._default_exit = default_exit
 
     def to_rapid_pro_dict(self):
         pass
+
+    def exits(self):
+        """
+        :return: List of all the exits from this node.
+        :rtype: list of (FlowNode | None)
+        """
+        return [self._default_exit]
 
 
 class WaitForResponseNode(FlowNode):
@@ -81,16 +99,17 @@ class WaitForResponseNode(FlowNode):
     :param opt_out_detectors: Opt out detectors to use to automatically identify an opt-out message.
                               If None, performs no automatic opt-out detection.
     :type opt_out_detectors: list of OptOutDetector | None
+    :param opt_out_exit: Node to visit after this one if opt-out was detected by one of the `opt_out_detectors`.
+    :type opt_out_exit: FlowNode | None
+    :param default_exit: Node to visit after this one if no opt-out was detected.
+    :type default_exit: FlowNode | None
     """
 
-    def __init__(self, result_name, opt_out_detectors=None):
-        super().__init__()
-
-        if opt_out_detectors is None:
-            opt_out_detectors = []
-
+    def __init__(self, result_name, opt_out_detectors, opt_out_exit=None, default_exit=None):
+        super().__init__(default_exit)
         self._result_name = result_name
         self._opt_out_detectors = opt_out_detectors
+        self._opt_out_exit = opt_out_exit
 
     def to_rapid_pro_dict(self):
         opt_out_category_uuid = generate_rapid_pro_uuid()
@@ -125,16 +144,19 @@ class WaitForResponseNode(FlowNode):
             },
             "exits": [
                 {
-                    "destination_uuid": None,
+                    "destination_uuid": None if self._opt_out_exit is None else self._opt_out_exit._uuid,
                     "uuid": stop_exit_uuid
                 },
                 {
-                    "destination_uuid": None,
+                    "destination_uuid": None if self._default_exit is None else self._default_exit._uuid,
                     "uuid": other_exit_uuid
                 }
             ],
             "actions": [],
         }
+
+    def exits(self):
+        return [self._opt_out_exit, self._default_exit]
 
 
 class OptOutDetector(abc.ABC):

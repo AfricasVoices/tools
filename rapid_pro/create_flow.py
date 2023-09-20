@@ -1,7 +1,7 @@
 import json
 
-from flow_generation.FlowGraph import FlowGraph, SendMessageNode, RegexOptOutDetector, DefinitionFile, \
-    ExactMatchOptOutDetector
+from flow_generation.FlowGraph import (FlowGraph, SendMessageNode, WaitForResponseNode, RegexOptOutDetector,
+                                       DefinitionFile, ExactMatchOptOutDetector)
 
 opt_out_detectors = [
     RegexOptOutDetector("^j[ao]+w*ji"),
@@ -12,7 +12,11 @@ flow = FlowGraph(
     name="generated_activation_test",
     primary_language="eng",
     start_node=SendMessageNode(
-        text="Test Message"
+        text="Test Message",
+        default_exit=WaitForResponseNode(
+            result_name="test_result",
+            opt_out_detectors=opt_out_detectors
+        )
     )
 )
 

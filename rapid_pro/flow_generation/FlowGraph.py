@@ -159,6 +159,42 @@ class WaitForResponseNode(FlowNode):
         return [self._opt_out_exit, self._default_exit]
 
 
+class SendMessageNode(FlowNode):
+    """
+    Represents a Rapid Pro "Send Message" node.
+
+    :param text: Text to send, in the flow's `default_language`.
+    :type text: str
+    :param default_exit: Node to visit after this one.
+    :type default_exit: FlowNode | None
+    """
+
+    def __init__(self, text, default_exit=None):
+        super().__init__(default_exit)
+        self._text = text
+
+    def to_rapid_pro_dict(self):
+        return {
+            "uuid": self._uuid,
+            "actions": [
+                {
+                    "all_urns": False,
+                    "attachments": [],
+                    "quick_replies": [],
+                    "text": self._text,
+                    "type": "send_msg",
+                    "uuid": generate_rapid_pro_uuid()
+                }
+            ],
+            "exits": [
+                {
+                    "uuid": generate_rapid_pro_uuid(),
+                    "destination_uuid": None if self._default_exit is None else self._default_exit._uuid
+                }
+            ]
+        }
+
+
 class OptOutDetector(abc.ABC):
     def __init__(self):
         self._uuid = generate_rapid_pro_uuid()

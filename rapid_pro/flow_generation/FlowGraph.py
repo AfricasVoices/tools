@@ -45,7 +45,23 @@ class FlowGraph:
         self._uuid = generate_rapid_pro_uuid()
         self._name = name
         self._primary_language = primary_language
-        self._nodes = [start_node]
+        self._start_node = start_node
+
+    def get_nodes(self):
+        nodes = dict()
+        nodes_to_process = [self._start_node]
+        while len(nodes_to_process) > 0:
+            next_node = nodes_to_process.pop()
+            if next_node is None:
+                continue
+
+            if next_node.uuid in nodes:
+                continue
+
+            nodes[next_node.uuid] = next_node
+            nodes_to_process.extend(next_node.exits())
+
+        return list(nodes.values())
 
     def to_rapid_pro_dict(self):
         return {
@@ -57,7 +73,7 @@ class FlowGraph:
             "spec_version": "13.2.0",
             "type": "messaging",
             "revision": 1,
-            "nodes": [self._nodes[0].to_rapid_pro_dict()],
+            "nodes": [node.to_rapid_pro_dict() for node in self.get_nodes()],
         }
 
 
@@ -73,7 +89,7 @@ class FlowNode(abc.ABC):
     """
 
     def __init__(self, default_exit=None):
-        self._uuid = generate_rapid_pro_uuid()
+        self.uuid = generate_rapid_pro_uuid()
         self._default_exit = default_exit
 
     def to_rapid_pro_dict(self):
@@ -119,7 +135,7 @@ class WaitForResponseNode(FlowNode):
         other_exit_uuid = generate_rapid_pro_uuid()
 
         return {
-            "uuid": self._uuid,
+            "uuid": self.uuid,
             "router": {
                 "type": "switch",
                 "default_category_uuid": default_category_uuid,
@@ -144,11 +160,11 @@ class WaitForResponseNode(FlowNode):
             },
             "exits": [
                 {
-                    "destination_uuid": None if self._opt_out_exit is None else self._opt_out_exit._uuid,
+                    "destination_uuid": None if self._opt_out_exit is None else self._opt_out_exit.uuid,
                     "uuid": stop_exit_uuid
                 },
                 {
-                    "destination_uuid": None if self._default_exit is None else self._default_exit._uuid,
+                    "destination_uuid": None if self._default_exit is None else self._default_exit.uuid,
                     "uuid": other_exit_uuid
                 }
             ],
@@ -175,7 +191,7 @@ class SendMessageNode(FlowNode):
 
     def to_rapid_pro_dict(self):
         return {
-            "uuid": self._uuid,
+            "uuid": self.uuid,
             "actions": [
                 {
                     "all_urns": False,
@@ -189,7 +205,7 @@ class SendMessageNode(FlowNode):
             "exits": [
                 {
                     "uuid": generate_rapid_pro_uuid(),
-                    "destination_uuid": None if self._default_exit is None else self._default_exit._uuid
+                    "destination_uuid": None if self._default_exit is None else self._default_exit.uuid
                 }
             ]
         }

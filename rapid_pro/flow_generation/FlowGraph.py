@@ -211,6 +211,95 @@ class SendMessageNode(FlowNode):
         }
 
 
+class ContactField:
+    def __init__(self, key, name):
+        self.key = key
+        self.name = name
+
+
+class SetContactFieldNode(FlowNode):
+    def __init__(self, contact_field, value, default_exit=None):
+        super().__init__(default_exit)
+        self._contact_field = contact_field
+        self._value = value
+
+    def to_rapid_pro_dict(self):
+        return {
+            "uuid": self.uuid,
+            "actions": [
+                {
+                    "uuid": generate_rapid_pro_uuid(),
+                    "type": "set_contact_field",
+                    "field": {
+                        "key": self._contact_field.key,
+                        "name": self._contact_field.name
+                    },
+                    "value": self._value
+                }
+            ],
+            "exits": [
+                {
+                    "uuid": generate_rapid_pro_uuid(),
+                    "destination_uuid": None if self._default_exit is None else self._default_exit.uuid
+                }
+            ]
+        }
+
+
+class ContactFieldHasTextSplitNode(FlowNode):
+    def __init__(self, contact_field, has_text_exit=None, default_exit=None):
+        super().__init__(default_exit)
+        self._has_text_exit = has_text_exit
+        self._contact_field = contact_field
+
+    def to_rapid_pro_dict(self):
+        has_text_category_uuid = generate_rapid_pro_uuid()
+        other_category_uuid = generate_rapid_pro_uuid()
+
+        has_text_exit_uuid = generate_rapid_pro_uuid()
+        other_exit_uuid = generate_rapid_pro_uuid()
+
+        return {
+            "uuid": self.uuid,
+            "actions": [],
+            "router": {
+                "default_category_uuid": other_category_uuid,
+                "operand": f"@fields.{self._contact_field.key}",
+                "type": "switch",
+                "cases": [
+                    {
+                        "arguments": [],
+                        "category_uuid": has_text_category_uuid,
+                        "type": "has_text",
+                        "uuid": generate_rapid_pro_uuid()
+                    }
+                ],
+                "categories": [
+                    {
+                        "exit_uuid": has_text_exit_uuid,
+                        "name": self._contact_field.name,
+                        "uuid": has_text_category_uuid
+                    },
+                    {
+                        "exit_uuid": other_exit_uuid,
+                        "name": "Other",
+                        "uuid": other_category_uuid
+                    }
+                ]
+            },
+            "exits": [
+                {
+                    "destination_uuid": None if self._has_text_exit is None else self._has_text_exit.uuid,
+                    "uuid": has_text_exit_uuid
+                },
+                {
+                    "destination_uuid": None if self._default_exit is None else self._default_exit.uuid,
+                    "uuid": other_exit_uuid
+                }
+            ]
+        }
+
+
 class OptOutDetector(abc.ABC):
     def __init__(self):
         self._uuid = generate_rapid_pro_uuid()

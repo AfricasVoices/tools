@@ -1,8 +1,7 @@
 import json
 
-from flow_generation.FlowGraph import (FlowGraph, SendMessageNode, WaitForResponseNode, RegexOptOutDetector,
-                                       DefinitionFile, ExactMatchOptOutDetector, ContactFieldHasTextSplitNode,
-                                       ContactField, SetContactFieldNode)
+from flow_generation.FlowGraph import (FlowGraph, AskQuestionIfNotAnswered, RegexOptOutDetector,
+                                       DefinitionFile, ExactMatchOptOutDetector, ContactField)
 
 opt_out_detectors = [
     RegexOptOutDetector("^j[ao]+w*ji"),
@@ -17,20 +16,11 @@ age_field = ContactField(
 flow = FlowGraph(
     name="generated_activation_test",
     primary_language="eng",
-    # Ask the age question if not already answered
-    start_node=ContactFieldHasTextSplitNode(
+    start_node=AskQuestionIfNotAnswered(
+        text="How old are you?",
+        result_name="age_result",
         contact_field=age_field,
-        default_exit=SendMessageNode(
-            text="How old are you?",
-            default_exit=WaitForResponseNode(
-                result_name="age_result",
-                opt_out_detectors=opt_out_detectors,
-                default_exit=SetContactFieldNode(
-                    contact_field=age_field,
-                    value="@results.age_result.input"
-                )
-            )
-        )
+        opt_out_detectors=opt_out_detectors
     )
 )
 

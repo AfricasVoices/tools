@@ -1,0 +1,38 @@
+{
+    "GlobalSettings": {
+        "Consent": {
+            "OptOutDetectionLanguages": [
+                "som",
+                "eng"
+            ],
+            "OptOutReply": {
+                "Text": "Thanks. Your message may be read out on air, but will not be used as part of this project."
+            },
+            "OptedOutContactField": {
+                "Key":  "generated_flow_consent_withdrawn",
+                "Name": "Generated Flow Consent Withdrawn"
+            }
+        },
+        "PrimaryEditingLanguage": "eng"
+    },
+    "Flows": [
+        {
+            "FlowName": "generation_test_demographics",
+            "FlowType": "survey",
+            "Params": {
+                "Questions": [
+                    {
+                        "Text": "How old are you?",
+                        "ContactField": {"Key": "generated_flow_age", "Name": "Generated Flow Age"},
+                        "ResultName": "age_test"
+                    },
+                    {
+                        "Text": "Where do you live?",
+                        "ContactField": {"Key": "generated_flow_location", "Name": "Generated Flow Location"},
+                        "ResultName": "location_test"
+                    }
+                ]
+            }
+        }
+    ]
+}

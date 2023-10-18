@@ -118,6 +118,31 @@ class FlowNodeGroup(abc.ABC):
         self.uuid = start_node.uuid
 
 
+class NodeSequence(FlowNodeGroup):
+    """
+    Configuration for a node group which connects the default_exit of every node in a sequence to the next node.
+
+    :param nodes: Nodes in the sequence.
+    :type nodes: list of (FlowNode | FlowNodeGroup)
+    """
+    def __init__(self, nodes, default_exit=None):
+        super().__init__(start_node=nodes[0])
+
+        for i, node in enumerate(nodes[:-1]):
+            node.default_exit = nodes[i + 1]
+
+        self._last_node = nodes[-1]
+        self._last_node.default_exit = default_exit
+
+    @property
+    def default_exit(self):
+        return self._last_node.default_exit
+
+    @default_exit.setter
+    def default_exit(self, value):
+        self._last_node.default_exit = value
+
+
 class AskQuestionIfNotAnswered(FlowNodeGroup):
     """
     Configuration for a node group that asks a participant a question if they haven't previously provided an answer.

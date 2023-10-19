@@ -85,7 +85,7 @@ def create_flow_from_config(flow_config, primary_language, opt_out_detectors, op
 
 if __name__ == "__main__":
     # TODO: Move to command line argument.
-    flow_configurations_file_path = "flow_generation/test/test_flow_configurations.json"
+    flow_configurations_file_path = "flow_generation/resources/test_flow_configurations.json"
 
     with open(flow_configurations_file_path) as f:
         flow_configurations = FlowConfigurations.from_dict(json.load(f))

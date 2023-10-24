@@ -163,7 +163,7 @@ class AskQuestionIfNotAnswered(FlowNodeGroup):
     :param opt_out_detectors: Opt-out detectors to apply to the participant's response, to decide whether the
                               participant has opted out or not.
     :type opt_out_detectors: list of OptOutDetector
-    :param result_name: Name to save the response under in Rapid Pro's flow results.
+    :param result_name: Name to save the participant's response under in Rapid Pro's flow results.
     :type result_name: str
     :param previously_answered_exit: Node to visit after this one if the participant had already answered this question.
     :type: previously_answered_ext: FlowNode | FlowNodeGroup | None

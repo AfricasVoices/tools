@@ -145,7 +145,7 @@ class ActivationFlowConfiguration(FlowConfiguration):
     :type next_flow: str | None
     """
 
-    def __init__(self, flow_name, result_name, next_flow):
+    def __init__(self, flow_name, result_name, next_flow=None):
         super().__init__(flow_name)
         self.result_name = result_name
         self.next_flow = next_flow
@@ -155,7 +155,7 @@ class ActivationFlowConfiguration(FlowConfiguration):
         return cls(
             flow_name=d["FlowName"],
             result_name=d["Params"]["ResultName"],
-            next_flow=d["Params"].get("NextFlow", None)
+            next_flow=d["Params"].get("NextFlow")
         )
 
 

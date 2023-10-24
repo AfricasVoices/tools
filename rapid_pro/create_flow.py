@@ -81,6 +81,10 @@ def create_activation_flow_from_config(flow_config, flow_ids, primary_language, 
     :type opt_out_handler: flow_generation.FlowGraph.FlowNode | flow_generation.FlowGraph.FlowNode | Nones
     :rtype: flow_generation.FlowGraph.FlowGraph
     """
+    next_flow_node = None
+    if flow_config.next_flow is not None:
+        next_flow_node = EnterAnotherFlowNode(flow_name=flow_config.next_flow, flow_uuid=flow_ids[flow_config.next_flow])
+
     return FlowGraph(
         uuid=flow_ids[flow_config.flow_name],
         name=flow_config.flow_name,
@@ -89,7 +93,7 @@ def create_activation_flow_from_config(flow_config, flow_ids, primary_language, 
             result_name=flow_config.result_name,
             opt_out_detectors=opt_out_detectors,
             opt_out_exit=opt_out_handler,
-            default_exit=EnterAnotherFlowNode(flow_name=flow_config.next_flow, flow_uuid=flow_ids[flow_config.next_flow])
+            default_exit=next_flow_node
         )
     )
 

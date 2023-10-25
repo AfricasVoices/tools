@@ -1,4 +1,5 @@
 import json
+from pprint import pprint
 
 from flow_generation.FlowConfigurations import FlowConfigurations, SurveyFlowConfiguration
 from flow_generation.FlowGraph import (FlowGraph, AskQuestionIfNotAnswered, RegexOptOutDetector,
@@ -46,10 +47,10 @@ def create_survey_question_from_config(config, opt_out_detectors, opt_out_handle
     )
 
 
-def create_survey_flow_from_config(flow_config, primary_language, opt_out_detectors, opt_out_handler):
+def create_survey_flow_from_config(flow_config, global_settings, opt_out_detectors, opt_out_handler):
     """
     :type flow_config: flow_generation.FlowConfigurations.SurveyFlowConfiguration
-    :type primary_language: str
+    :type global_settings: flow_generation.FlowConfigurations.GlobalSettings
     :type opt_out_detectors: list of flow_generation.FlowGraph.OptOutDetector
     :type opt_out_handler: flow_generation.FlowGraph.FlowNode | flow_generation.FlowGraph.FlowNode | Nones
     :rtype: flow_generation.FlowGraph.FlowGraph
@@ -64,21 +65,22 @@ def create_survey_flow_from_config(flow_config, primary_language, opt_out_detect
 
     return FlowGraph(
         name=flow_config.flow_name,
-        primary_language=primary_language,
+        editing_language=global_settings.languages.editing_language,
+        localization_languages=global_settings.languages.localization_languages,
         start_node=NodeSequence(question_nodes)
     )
 
 
-def create_flow_from_config(flow_config, primary_language, opt_out_detectors, opt_out_handler):
+def create_flow_from_config(flow_config, global_settings, opt_out_detectors, opt_out_handler):
     """
     :type flow_config: flow_generation.FlowConfigurations.FlowConfiguration
-    :type primary_language: str
+    :type global_settings: flow_generation.FlowConfigurations.GlobalSettings
     :type opt_out_detectors: list of flow_generation.FlowGraph.OptOutDetector
     :type opt_out_handler: flow_generation.FlowGraph.FlowNode | flow_generation.FlowGraph.FlowNode | Nones
     :rtype: flow_generation.FlowGraph.FlowGraph
     """
     if isinstance(flow_config, SurveyFlowConfiguration):
-        return create_survey_flow_from_config(flow_config, primary_language, opt_out_detectors, opt_out_handler)
+        return create_survey_flow_from_config(flow_config, global_settings, opt_out_detectors, opt_out_handler)
 
     raise TypeError("Unknown FlowConfiguration type")
 
@@ -90,12 +92,13 @@ if __name__ == "__main__":
     with open(flow_configurations_file_path) as f:
         flow_configurations = FlowConfigurations.from_dict(json.load(f))
 
-    opt_out_detectors = create_opt_out_detectors_from_config(flow_configurations.global_settings.consent)
-    opt_out_handler = create_opt_out_handler_from_config(flow_configurations.global_settings.consent)
-    primary_language = flow_configurations.global_settings.primary_editing_language
+    global_settings = flow_configurations.global_settings
+
+    opt_out_detectors = create_opt_out_detectors_from_config(global_settings.consent)
+    opt_out_handler = create_opt_out_handler_from_config(global_settings.consent)
 
     flows = [
-        create_flow_from_config(flow_config, primary_language, opt_out_detectors, opt_out_handler)
+        create_flow_from_config(flow_config, global_settings, opt_out_detectors, opt_out_handler)
         for flow_config in flow_configurations.flows
     ]
 

@@ -1,6 +1,6 @@
 import abc
 
-from flow_generation.FlowGraph import ContactField
+from flow_generation.FlowGraph import ContactField, OutboundText
 
 
 class Consent:
@@ -18,7 +18,7 @@ class Consent:
     :type opt_out_detection_languages: list of str
     :param opt_out_reply_text: Text to send back to participants when they are automatically detected as having
                                opted-out.
-    :type opt_out_reply_text: str
+    :type opt_out_reply_text: OutboundText
     :param opted_out_contact_field: Contact field to use to check/set opt-out status.
     :type opted_out_contact_field: ContactField
     """
@@ -31,7 +31,9 @@ class Consent:
     def from_dict(cls, d):
         return cls(
             opt_out_detection_languages=d["OptOutDetectionLanguages"],
-            opt_out_reply_text=d["OptOutReply"]["Text"],
+            opt_out_reply_text=OutboundText(
+                translations=d["OptOutReplyText"],
+            ),
             opted_out_contact_field=ContactField(
                 key=d["OptedOutContactField"]["Key"],
                 name=d["OptedOutContactField"]["Name"]
@@ -39,25 +41,46 @@ class Consent:
         )
 
 
+class Languages:
+    """
+    Configuration for languages to use in flows.
+
+    :param editing_language: ISO-639-3 language code for the primary language e.g. "eng". This is the language
+                             to use for editing flows, not the language to be used in messaging.
+    :type editing_language: str
+    :param localization_languages: ISO-639-3 language codes of the other languages that this flow should support.
+    :type localization_languages: list of str
+    """
+    def __init__(self, editing_language, localization_languages):
+        self.editing_language = editing_language
+        self.localization_languages = localization_languages
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(
+            editing_language=d["EditingLanguage"],
+            localization_languages=d["LocalizationLanguages"]
+        )
+
+
 class GlobalSettings:
     """
     Settings to apply to every flow in a group of flows.
 
-    :param primary_editing_language: ISO-639-3 language code for the primary language e.g. "eng". This is the language
-                                     to use for editing flows, not the language to be used in messaging.
-    :type primary_editing_language: str
+    :param languages: Language configuration.
+    :type languages: Languages
     :param consent: Configuration for consent-handling.
     :type consent: Consent
     """
 
-    def __init__(self, primary_editing_language, consent):
-        self.primary_editing_language = primary_editing_language
+    def __init__(self, languages, consent):
+        self.languages = languages
         self.consent = consent
 
     @classmethod
     def from_dict(cls, d):
         return cls(
-            primary_editing_language=d["PrimaryEditingLanguage"],
+            languages=Languages.from_dict(d["Languages"]),
             consent=Consent.from_dict(d["Consent"])
         )
 
@@ -67,7 +90,7 @@ class SurveyFlowQuestion:
     Configuration for a survey question to ask in a flow.
 
     :param text: Question text to send.
-    :type text: str
+    :type text: flow_generation.FlowGraph.OutboundText
     :param contact_field: Contact field where the participant's answer should be stored.
                           If this field already contains a value, the question will not be asked.
     :type contact_field: ContactField
@@ -83,7 +106,7 @@ class SurveyFlowQuestion:
     @classmethod
     def from_dict(cls, d):
         return cls(
-            text=d["Text"],
+            text=OutboundText(translations=d["Text"]),
             contact_field=ContactField(
                 key=d["ContactField"]["Key"],
                 name=d["ContactField"]["Name"]

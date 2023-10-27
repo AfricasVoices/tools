@@ -94,7 +94,7 @@ class SurveyFlowQuestion:
     :param contact_field: Contact field where the participant's answer should be stored.
                           If this field already contains a value, the question will not be asked.
     :type contact_field: ContactField
-    :param result_name: Name to save the participant's response under in Rapid Pro's flow results.
+    :param result_name: Variable to save the participant's response under in Rapid Pro's flow results.
     :type result_name: str
     """
 
@@ -152,6 +152,36 @@ class SurveyFlowConfiguration(FlowConfiguration):
         )
 
 
+class ActivationFlowConfiguration(FlowConfiguration):
+    """
+    Configuration for an activation flow.
+
+    An activation flow waits for a response from the participant.
+    On receiving a reply, enters another flow if specified.
+
+    :param flow_name: Name of the flow.
+    :type flow_name: str
+    :param result_name: Variable to save the participant's response under in Rapid Pro's flow results.
+    :type result_name: str
+    :param next_flow: Name of the flow to enter after receiving a consenting response.
+                      If None, does not enter another flow.
+    :type next_flow: str | None
+    """
+
+    def __init__(self, flow_name, result_name, next_flow=None):
+        super().__init__(flow_name)
+        self.result_name = result_name
+        self.next_flow = next_flow
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(
+            flow_name=d["FlowName"],
+            result_name=d["Params"]["ResultName"],
+            next_flow=d["Params"].get("NextFlow")
+        )
+
+
 class FlowConfigurations:
     """
     Configuration for flow generation and testing.
@@ -177,5 +207,7 @@ class FlowConfigurations:
         flow_type = d["FlowType"]
         if flow_type == "survey":
             return SurveyFlowConfiguration.from_dict(d)
+        elif flow_type == "activation":
+            return ActivationFlowConfiguration.from_dict(d)
 
         raise ValueError(f"Unknown FlowType '{flow_type}'")

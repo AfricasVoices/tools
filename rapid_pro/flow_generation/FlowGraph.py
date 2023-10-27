@@ -80,8 +80,11 @@ class FlowGraph:
     :type start_node: FlowNode | FlowNodeGroup
     """
 
-    def __init__(self, name, editing_language, localization_languages, start_node):
-        self._uuid = generate_rapid_pro_uuid()
+    def __init__(self, name, editing_language, localization_languages, start_node, uuid=None):
+        if uuid is None:
+            uuid = generate_rapid_pro_uuid()
+
+        self._uuid = uuid
         self._name = name
         self._editing_language = editing_language
         self._localization_languages = localization_languages
@@ -271,7 +274,7 @@ class AskQuestionIfNotAnswered(FlowNodeGroup):
     :param opt_out_detectors: Opt-out detectors to apply to the participant's response, to decide whether the
                               participant has opted out or not.
     :type opt_out_detectors: list of OptOutDetector
-    :param result_name: Name to save the participant's response under in Rapid Pro's flow results.
+    :param result_name: Variable to save the participant's response under in Rapid Pro's flow results.
     :type result_name: str
     :param previously_answered_exit: Node to visit after this one if the participant had already answered this question.
     :type: previously_answered_ext: FlowNode | FlowNodeGroup | None
@@ -522,6 +525,89 @@ class ContactFieldHasTextSplitNode(FlowNode):
                     "uuid": other_exit_uuid
                 }
             ]
+        }
+
+
+class EnterAnotherFlowNode(FlowNode):
+    """
+    Represents a Rapid Pro "Enter Another Flow" node.
+
+    :param flow_name: Name of the flow to enter.
+    :type flow_name: str
+    :param flow_uuid: UUID of flow to enter.
+    :type flow_uuid: str
+    :param default_exit: Node to visit after this one i.e. after the participant completes the entered flow.
+    :type default_exit: FlowNode | FlowNodeGroup | None
+    """
+    def __init__(self, flow_name, flow_uuid, default_exit=None):
+        super().__init__(default_exit)
+        self.flow_uuid = flow_uuid
+        self.flow_name = flow_name
+
+    def to_rapid_pro_dict(self):
+        completed_exit_uuid = generate_rapid_pro_uuid()
+        expired_exit_uuid = generate_rapid_pro_uuid()
+
+        complete_category_uuid = generate_rapid_pro_uuid()
+        expired_category_uuid = generate_rapid_pro_uuid()
+
+        return {
+            "uuid": self.uuid,
+            "actions": [
+                {
+                    "uuid": generate_rapid_pro_uuid(),
+                    "type": "enter_flow",
+                    "flow": {
+                        "name": self.flow_name,
+                        "uuid": self.flow_uuid
+                    }
+                }
+            ],
+            "exits": [
+                {
+                    "uuid": completed_exit_uuid,
+                    "destination_uuid": None if self.default_exit is None else self.default_exit.uuid
+                },
+                {
+                    "uuid": expired_exit_uuid,
+                    "destination_uuid": None
+                }
+            ],
+            "router": {
+                "cases": [
+                    {
+                        "arguments": [
+                            "completed"
+                        ],
+                        "category_uuid": complete_category_uuid,
+                        "type": "has_only_text",
+                        "uuid": generate_rapid_pro_uuid()
+                    },
+                    {
+                        "arguments": [
+                            "expired"
+                        ],
+                        "category_uuid": expired_category_uuid,
+                        "type": "has_only_text",
+                        "uuid": generate_rapid_pro_uuid()
+                    }
+                ],
+                "categories": [
+                    {
+                        "exit_uuid": completed_exit_uuid,
+                        "name": "Complete",
+                        "uuid": complete_category_uuid
+                    },
+                    {
+                        "exit_uuid": expired_exit_uuid,
+                        "name": "Expired",
+                        "uuid": expired_category_uuid
+                    }
+                ],
+                "default_category_uuid": complete_category_uuid,
+                "operand": "@child.status",
+                "type": "switch"
+            }
         }
 
 

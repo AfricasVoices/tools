@@ -33,6 +33,14 @@
                     }
                 ]
             }
+        },
+        {
+            "FlowName": "generation_test_activation",
+            "FlowType": "activation",
+            "Params": {
+                "ResultName": "activation_test",
+                "NextFlow": "generation_test_demographics"
+            }
         }
     ]
 }

@@ -13,8 +13,10 @@ class Tester:
     :type test_service: flow_generation.test.RapidProTestService.RapidProTestService
     :param test_participant_conversation: A conversation between a test participant and the `test_service`.
     :type test_participant_conversation: flow_generation.test.TelegramParticipantConversation.TelegramParticipantConversation
-    :param reply_wait_time_seconds: Time to sleep for at the start of methods .
-                                    This wait period gives the workspace being tested time to
+    :param reply_wait_time_seconds: Time to sleep for at the start of methods which check for replies from the test
+                                    service to the participant.
+                                    This wait period gives the workspace being tested time to respond to previously
+                                    sent messages.
     :type reply_wait_time_seconds: int
     """
     def __init__(self, test_service, test_participant_conversation, reply_wait_time_seconds=3):

@@ -14,7 +14,7 @@ from flow_generation.test.Tester import Tester
 log = Logger(__name__)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Synchronises contacts between two Rapid Pro workspaces")
+    parser = argparse.ArgumentParser(description="Tests flows on Rapid Pro by automating a Telegram conversation")
 
     parser.add_argument("google_cloud_credentials_file_path", metavar="google-cloud-credentials-file-path",
                         help="Path to a Google Cloud service account credentials file to use to access the "

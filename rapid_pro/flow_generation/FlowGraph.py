@@ -545,7 +545,7 @@ class EnterAnotherFlowNode(FlowNode):
         self.flow_uuid = flow_uuid
         self.flow_name = flow_name
 
-    def to_rapid_pro_dict(self):
+    def to_rapid_pro_node_dict(self, editing_language):
         completed_exit_uuid = generate_rapid_pro_uuid()
         expired_exit_uuid = generate_rapid_pro_uuid()
 

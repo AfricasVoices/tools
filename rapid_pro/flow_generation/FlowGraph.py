@@ -233,6 +233,7 @@ class OutboundText:
     def to_rapid_pro_localization_dict(self, localization_languages):
         """
         :return: Dict of language code -> Rapid Pro localization dict.
+                 e.g. {"som": {"attachments": [], "text": ["somali message"]}}
         :rtype: dict of str -> dict
         """
         self.validate()

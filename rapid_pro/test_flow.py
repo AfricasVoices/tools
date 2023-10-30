@@ -64,6 +64,6 @@ if __name__ == "__main__":
 
         tester.reset_participant()
         tester.trigger_flow(flow.flow_name)
-        tester.expect_replies([flow.questions[0].text])
+        tester.expect_replies([flow.questions[0].text.get_translation("eng")])
         tester.send_message("test message")
-        tester.expect_replies([flow.questions[1].text])
+        tester.expect_replies([flow.questions[1].text.get_translation("eng")])

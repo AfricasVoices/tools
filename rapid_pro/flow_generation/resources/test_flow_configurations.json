@@ -1,19 +1,23 @@
 {
     "GlobalSettings": {
+        "Languages": {
+            "EditingLanguage": "eng",
+            "LocalizationLanguages": ["som"]
+        },
         "Consent": {
             "OptOutDetectionLanguages": [
                 "som",
                 "eng"
             ],
-            "OptOutReply": {
-                "Text": "Thanks. Your message may be read out on air, but will not be used as part of this project."
+            "OptOutReplyText": {
+                "eng": "Thanks. Your message may be read out on air, but will not be used as part of this project.",
+                "som": "Mahadsanid"
             },
             "OptedOutContactField": {
                 "Key":  "generated_flow_consent_withdrawn",
                 "Name": "Generated Flow Consent Withdrawn"
             }
-        },
-        "PrimaryEditingLanguage": "eng"
+        }
     },
     "Flows": [
         {
@@ -22,12 +26,18 @@
             "Params": {
                 "Questions": [
                     {
-                        "Text": "How old are you?",
+                        "Text": {
+                            "eng": "How old are you?",
+                            "som": "Da'daadu maxay tahay?"
+                        },
                         "ContactField": {"Key": "generated_flow_age", "Name": "Generated Flow Age"},
                         "ResultName": "age_test"
                     },
                     {
-                        "Text": "Where do you live?",
+                        "Text": {
+                            "eng": "Which district do you live in?",
+                            "som": "Degmadee ayaad ku nooshahay?"
+                        },
                         "ContactField": {"Key": "generated_flow_location", "Name": "Generated Flow Location"},
                         "ResultName": "location_test"
                     }

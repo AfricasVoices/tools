@@ -1,9 +1,47 @@
 import abc
 import uuid
+from collections import defaultdict
 
 
 def generate_rapid_pro_uuid():
     return str(uuid.uuid4())
+
+
+def deep_clone_dict(d):
+    """
+    :param d: Dictionary to clone.
+    :type d: dict
+    :return: A deep-clone of `d`.
+    :rtype: dict
+    """
+    cloned = dict()
+    for k, v in d.items():
+        if isinstance(v, dict):
+            cloned[k] = deep_clone_dict(v)
+        else:
+            cloned[k] = v
+    return cloned
+
+
+def merge_dicts(d1, d2):
+    """
+    Merges `d2` into a deep-clone of `d1`. Does not modify either `d1` or `d2`.
+
+    :param d1: Dictionary to be merged.
+    :type d1: dict
+    :param d2: Dictionary to be merged.
+    :type d2: dict
+    :return: `d2` merged into a deep-clone of `d1`.
+    :rtype: dict
+    """
+    merged = deep_clone_dict(d1)
+    for k, v in d2.items():
+        if isinstance(v, dict):
+            merged[k] = merge_dicts(d1.get(k, dict()), v)
+        else:
+            merged[k] = v
+
+    return merged
 
 
 class DefinitionFile:
@@ -34,20 +72,22 @@ class FlowGraph:
 
     :param name: Name of this flow.
     :type name: str
-    :param primary_language: ISO-639-3 language code for the primary language e.g. "eng". This is the language to
-                             use for editing flows, not the language to be used in messaging.
-    :type primary_language: str
+    :param editing_language: ISO-639-3 language code for the primary language to use when editing flows e.g. "eng".
+    :type editing_language: str
+    :param localization_languages: ISO-639-3 language codes to provide translations in.
+    :type localization_languages: list of str
     :param start_node: The start node in the flow graph. This node is visited first when a flow is triggered.
     :type start_node: FlowNode | FlowNodeGroup
     """
 
-    def __init__(self, name, primary_language, start_node, uuid=None):
+    def __init__(self, name, editing_language, localization_languages, start_node, uuid=None):
         if uuid is None:
             uuid = generate_rapid_pro_uuid()
 
         self._uuid = uuid
         self._name = name
-        self._primary_language = primary_language
+        self._editing_language = editing_language
+        self._localization_languages = localization_languages
         self._start_node = start_node
 
     def get_nodes(self):
@@ -70,17 +110,31 @@ class FlowGraph:
 
         return list(nodes.values())
 
+    def _get_rapid_pro_localization(self):
+        """
+        Gets the flow localization data in Rapid Pro's flow format.
+
+        :return: Dictionary of ISO-639-3 language code -> uuid of node action to localize -> Rapid Pro localization.
+        :rtype: dict of str -> (dict of str -> dict)
+        """
+        localization = dict()
+
+        for node in self.get_nodes():
+            localization = merge_dicts(localization, node.to_rapid_pro_localization_dict(self._localization_languages))
+
+        return localization
+
     def to_rapid_pro_dict(self):
         return {
             "uuid": self._uuid,
             "name": self._name,
             "expire_after_minutes": 60 * 24 * 7,  # 1 week
-            "language": self._primary_language,
-            "localization": {},
+            "language": self._editing_language,
+            "localization": self._get_rapid_pro_localization(),
             "spec_version": "13.2.0",
             "type": "messaging",
             "revision": 1,
-            "nodes": [node.to_rapid_pro_dict() for node in self.get_nodes()],
+            "nodes": [node.to_rapid_pro_node_dict(self._editing_language) for node in self.get_nodes()],
         }
 
 
@@ -99,8 +153,18 @@ class FlowNode(abc.ABC):
         self.uuid = generate_rapid_pro_uuid()
         self.default_exit = default_exit
 
-    def to_rapid_pro_dict(self):
+    def to_rapid_pro_node_dict(self, editing_language):
         pass
+
+    def to_rapid_pro_localization_dict(self, localization_languages):
+        """
+        :param localization_languages: Languages to include in the localization_dict.
+        :type localization_languages: list of str
+        :return: Rapid Pro localization dict containing the details for this node.
+                 The format is language code -> node action uuid -> translation dict.
+        :rtype: dict of str -> (dict of str -> dict)
+        """
+        return dict()
 
     def exits(self):
         """
@@ -146,6 +210,51 @@ class NodeSequence(FlowNodeGroup):
         self._last_node.default_exit = value
 
 
+class OutboundText:
+    """
+    Outbound text to be sent from Rapid Pro to a participant, with translations.
+
+    :param translations: Outbound text translated into multiple languages, as a dict of ISO-639-3 language code -> text.
+    :type translations: dict of str -> str
+    """
+
+    def __init__(self, translations):
+        self._translations = translations
+
+    def get_translation(self, language):
+        """
+        :param language: ISO-639-3 code of the language to get the translation for.
+        :type language: str
+        :return: Translation for the requested `language`.
+        :rtype: str
+        """
+        return self._translations[language]
+
+    def to_rapid_pro_localization_dict(self, localization_languages):
+        """
+        :return: Dict of language code -> Rapid Pro localization dict.
+                 e.g. {"som": {"attachments": [], "text": ["somali message"]}}
+        :rtype: dict of str -> dict
+        """
+        self.validate()
+
+        localizations = dict()  # of language code -> Rapid Pro localization dict.
+        for lang in localization_languages:
+            localizations[lang] = {
+                "attachments": [],
+                "text": [
+                    self.get_translation(lang)
+                ]
+            }
+
+        return localizations
+
+    def validate(self, max_text_length=160):
+        # Check all the translations are no longer than the max text length.
+        for language, text in self._translations.items():
+            assert len(text) <= max_text_length, f"Outbound text too long for language '{language}': '{text}'"
+
+
 class AskQuestionIfNotAnswered(FlowNodeGroup):
     """
     Configuration for a node group that asks a participant a question if they haven't previously provided an answer.
@@ -159,7 +268,7 @@ class AskQuestionIfNotAnswered(FlowNodeGroup):
           `newly_answered_exit`.
 
     :param text: Question text to send
-    :type text: str
+    :type text: OutboundText
     :param contact_field: Contact field where the participant's answer should be stored.
                           If this field already contains a value, the question will not be asked.
     :type contact_field: ContactField
@@ -240,7 +349,7 @@ class WaitForResponseNode(FlowNode):
         self._opt_out_detectors = opt_out_detectors
         self.opt_out_exit = opt_out_exit
 
-    def to_rapid_pro_dict(self):
+    def to_rapid_pro_node_dict(self, editing_language):
         opt_out_category_uuid = generate_rapid_pro_uuid()
         default_category_uuid = generate_rapid_pro_uuid()
 
@@ -292,17 +401,18 @@ class SendMessageNode(FlowNode):
     """
     Represents a Rapid Pro "Send Message" node.
 
-    :param text: Text to send, in the flow's `default_language`.
-    :type text: str
+    :param text: Text to send.
+    :type text: OutboundText
     :param default_exit: Node to visit after this one.
     :type default_exit: FlowNode | FlowNodeGroup | None
     """
 
     def __init__(self, text, default_exit=None):
-        super().__init__(default_exit)
+        super().__init__(default_exit=default_exit)
         self._text = text
+        self._action_uuid = generate_rapid_pro_uuid()
 
-    def to_rapid_pro_dict(self):
+    def to_rapid_pro_node_dict(self, editing_language):
         return {
             "uuid": self.uuid,
             "actions": [
@@ -310,9 +420,9 @@ class SendMessageNode(FlowNode):
                     "all_urns": False,
                     "attachments": [],
                     "quick_replies": [],
-                    "text": self._text,
+                    "text": self._text.get_translation(editing_language),
                     "type": "send_msg",
-                    "uuid": generate_rapid_pro_uuid()
+                    "uuid": self._action_uuid
                 }
             ],
             "exits": [
@@ -322,6 +432,12 @@ class SendMessageNode(FlowNode):
                 }
             ]
         }
+
+    def to_rapid_pro_localization_dict(self, localization_languages):
+        localizations = defaultdict(dict)
+        for lang, localization in self._text.to_rapid_pro_localization_dict(localization_languages).items():
+            localizations[lang][self._action_uuid] = localization
+        return localizations
 
 
 class ContactField:
@@ -336,7 +452,7 @@ class SetContactFieldNode(FlowNode):
         self._contact_field = contact_field
         self._value = value
 
-    def to_rapid_pro_dict(self):
+    def to_rapid_pro_node_dict(self, editing_language):
         return {
             "uuid": self.uuid,
             "actions": [
@@ -365,7 +481,7 @@ class ContactFieldHasTextSplitNode(FlowNode):
         self.has_text_exit = has_text_exit
         self._contact_field = contact_field
 
-    def to_rapid_pro_dict(self):
+    def to_rapid_pro_node_dict(self, editing_language):
         has_text_category_uuid = generate_rapid_pro_uuid()
         other_category_uuid = generate_rapid_pro_uuid()
 
@@ -429,7 +545,7 @@ class EnterAnotherFlowNode(FlowNode):
         self.flow_uuid = flow_uuid
         self.flow_name = flow_name
 
-    def to_rapid_pro_dict(self):
+    def to_rapid_pro_node_dict(self, editing_language):
         completed_exit_uuid = generate_rapid_pro_uuid()
         expired_exit_uuid = generate_rapid_pro_uuid()
 

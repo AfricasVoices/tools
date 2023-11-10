@@ -612,6 +612,38 @@ class EnterAnotherFlowNode(FlowNode):
         }
 
 
+class SetLanguageNode(FlowNode):
+    """
+    Represents a Rapid Pro "Set Language" node.
+
+    :param language: Language to use for communications with this participant from now on, in ISO-639-3 format.
+    :type language: str
+    :param default_exit: Node to visit after this one i.e. after the participant completes the entered flow.
+    :type default_exit: FlowNode | FlowNodeGroup | None
+    """
+    def __init__(self, language, default_exit=None):
+        super().__init__(default_exit)
+        self.language = language
+
+    def to_rapid_pro_node_dict(self, editing_language):
+        return {
+            "uuid": self.uuid,
+            "actions": [
+                {
+                    "uuid": generate_rapid_pro_uuid(),
+                    "type": "set_contact_language",
+                    "language": self.language
+                }
+            ],
+            "exits": [
+                {
+                    "uuid": generate_rapid_pro_uuid(),
+                    "destination_uuid": None if self.default_exit is None else self.default_exit.uuid
+                }
+            ]
+        }
+
+
 class OptOutDetector(abc.ABC):
     def __init__(self):
         self.uuid = generate_rapid_pro_uuid()

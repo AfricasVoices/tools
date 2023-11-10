@@ -21,12 +21,16 @@ def test_survey_flow(flow, global_settings, tester):
     :type global_settings: flow_generation.FlowConfigurations.GlobalSettings
     :type tester: flow_generation.test.Tester.Tester
     """
+    language = global_settings.languages.editing_language
+    if global_settings.flow_initialisation.set_language is not None:
+        language = global_settings.flow_initialisation.set_language
+
     # Test we can run a normal conversation in full.
     tester.reset_participant()
     tester.trigger_flow(flow.flow_name)
 
     for question in flow_config.questions:
-        tester.expect_replies([question.text.get_translation("eng")])
+        tester.expect_replies([question.text.get_translation(language)])
         # Add a random uuid, so we don't mistake this message for previous tests
         test_msg = f"automated {question.result_name} test message {str(uuid.uuid4())}"
         tester.send_message(test_msg)
@@ -36,7 +40,7 @@ def test_survey_flow(flow, global_settings, tester):
     tester.reset_participant()
     tester.trigger_flow(flow.flow_name)
     tester.send_message("stop")
-    tester.expect_replies([global_settings.consent.opt_out_reply_text.get_translation("eng")])
+    tester.expect_replies([global_settings.consent.opt_out_reply_text.get_translation(language)])
 
     tester.trigger_flow(flow.flow_name)
     tester.expect_replies([])

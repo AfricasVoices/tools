@@ -17,6 +17,9 @@
                 "Key":  "generated_flow_consent_withdrawn",
                 "Name": "Generated Flow Consent Withdrawn"
             }
+        },
+        "FlowInitialisation": {
+            "SetLanguage": "som"
         }
     },
     "Flows": [

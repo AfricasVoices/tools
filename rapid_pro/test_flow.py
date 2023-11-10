@@ -1,5 +1,6 @@
 import argparse
 import json
+import uuid
 
 from core_data_modules.logging import Logger
 from rapid_pro_tools.rapid_pro_client import RapidProClient
@@ -65,5 +66,6 @@ if __name__ == "__main__":
         tester.reset_participant()
         tester.trigger_flow(flow.flow_name)
         tester.expect_replies([flow.questions[0].text.get_translation("eng")])
-        tester.send_message("test message")
-        tester.expect_replies([flow.questions[1].text.get_translation("eng")])
+        test_msg = "test message:" + str(uuid.uuid4())  # Add a random uuid so we don't mistake this message for previous tests
+        tester.send_message(test_msg)
+        tester.expect_latest_result(flow.flow_name, flow.questions[0].result_name, test_msg)

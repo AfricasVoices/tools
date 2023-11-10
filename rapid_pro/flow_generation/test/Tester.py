@@ -61,9 +61,25 @@ class Tester:
         :param expected_replies: Texts of the expected replies.
         :type expected_replies: list of str
         """
-        log.debug(f"Waiting {self._responses_wait_time_seconds} seconds for replies...")
+        log.debug(f"Waiting {self._responses_wait_time_seconds} seconds for replies from Rapid Pro...")
         time.sleep(self._responses_wait_time_seconds)
 
         log.info(f"Checking replies match the expected replies {expected_replies}...")
         replies = self._participant.get_messages_after(self._last_message_id)
         assert replies == expected_replies, f"Expected replies {expected_replies} but received {replies}"
+
+    def expect_latest_result(self, flow_name, result_name, expected_result):
+        """
+        Checks that the latest result for the participant in the test service matches the given text.
+
+        :param flow_name: Flow to check for results.
+        :type flow_name: str
+        :param result_name: Name of result to check.
+        :type result_name: str
+        :param expected_result: Expected result.
+        :type: str
+        """
+        log.debug(f"Checking Rapid Pro result '{result_name}' matches the expected result '{expected_result}'...")
+        result = self._service.get_latest_result(flow_name, result_name, self._participant.urn())
+        assert result == expected_result, \
+            f"Expected '{result_name}' to have result '{expected_result}' but received '{result}'"

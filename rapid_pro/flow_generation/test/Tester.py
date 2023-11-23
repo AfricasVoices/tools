@@ -42,6 +42,7 @@ class Tester:
         :type flow_name: str
         """
         log.info(f"Triggering flow '{flow_name}'...")
+        self._last_message_id = self._participant.get_last_message_id()
         self._service.trigger_flow(flow_name, self._participant.urn())
 
     def send_message(self, text):

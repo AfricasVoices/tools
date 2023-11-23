@@ -14,6 +14,34 @@ from flow_generation.test.Tester import Tester
 
 log = Logger(__name__)
 
+
+def test_survey_flow(flow, global_settings, tester):
+    """
+    :type flow: flow_generation.FlowConfigurations.SurveyFlowConfiguration
+    :type global_settings: flow_generation.FlowConfigurations.GlobalSettings
+    :type tester: flow_generation.test.Tester.Tester
+    """
+    # Test we can run a normal conversation in full.
+    tester.reset_participant()
+    tester.trigger_flow(flow.flow_name)
+
+    for question in flow_config.questions:
+        tester.expect_replies([question.text.get_translation("eng")])
+        # Add a random uuid, so we don't mistake this message for previous tests
+        test_msg = f"automated {question.result_name} test message {str(uuid.uuid4())}"
+        tester.send_message(test_msg)
+        tester.expect_latest_result(flow.flow_name, question.result_name, test_msg)
+
+    # Test we can opt out.
+    tester.reset_participant()
+    tester.trigger_flow(flow.flow_name)
+    tester.send_message("stop")
+    tester.expect_replies([global_settings.consent.opt_out_reply_text.get_translation("eng")])
+
+    tester.trigger_flow(flow.flow_name)
+    tester.expect_replies([])
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Tests flows on Rapid Pro by automating a Telegram conversation")
 
@@ -60,12 +88,7 @@ if __name__ == "__main__":
             flow_configurations = FlowConfigurations.from_dict(json.load(f))
 
         # Run a very simple, hard-coded test for now
-        flow = flow_configurations.flows[0]
-        assert flow.flow_name == "generation_test_demographics"
+        flow_config = flow_configurations.flows[0]
+        assert flow_config.flow_name == "generation_test_demographics"
 
-        tester.reset_participant()
-        tester.trigger_flow(flow.flow_name)
-        tester.expect_replies([flow.questions[0].text.get_translation("eng")])
-        test_msg = "test message:" + str(uuid.uuid4())  # Add a random uuid so we don't mistake this message for previous tests
-        tester.send_message(test_msg)
-        tester.expect_latest_result(flow.flow_name, flow.questions[0].result_name, test_msg)
+        test_survey_flow(flow_config, flow_configurations.global_settings, tester)

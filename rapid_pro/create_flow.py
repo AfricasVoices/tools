@@ -4,7 +4,7 @@ from flow_generation.FlowConfigurations import FlowConfigurations, SurveyFlowCon
 from flow_generation.FlowGraph import (FlowGraph, AskQuestionIfNotAnswered, RegexOptOutDetector,
                                        DefinitionFile, ExactMatchOptOutDetector, NodeSequence,
                                        SetContactFieldNode, SendMessageNode, WaitForResponseNode, EnterAnotherFlowNode,
-                                       generate_rapid_pro_uuid, ContactFieldHasTextSplitNode)
+                                       generate_rapid_pro_uuid, ContactFieldHasTextSplitNode, SetLanguageNode)
 
 opt_out_detectors_by_language = {
     "som": RegexOptOutDetector("^j[ao]+w*ji"),
@@ -47,6 +47,18 @@ def create_survey_question_from_config(config, opt_out_detectors, opt_out_handle
     )
 
 
+def create_initialisation_nodes(global_settings):
+    """
+    :type global_settings: flow_generation.FlowConfigurations.GlobalSettings
+    :rtype: FlowNode | FlowNodeGroup | None
+    """
+    start_node = None
+    if global_settings.flow_initialisation is not None and global_settings.flow_initialisation.set_language is not None:
+        start_node = SetLanguageNode(language=global_settings.flow_initialisation.set_language)
+
+    return start_node
+
+
 def create_survey_flow_from_config(flow_config, flow_ids, global_settings, opt_out_detectors, opt_out_handler):
     """
     :type flow_config: flow_generation.FlowConfigurations.SurveyFlowConfiguration
@@ -56,9 +68,15 @@ def create_survey_flow_from_config(flow_config, flow_ids, global_settings, opt_o
     :type opt_out_handler: flow_generation.FlowGraph.FlowNode | flow_generation.FlowGraph.FlowNode | Nones
     :rtype: flow_generation.FlowGraph.FlowGraph
     """
+    start_node = create_initialisation_nodes(global_settings)
+
     consent_check = ContactFieldHasTextSplitNode(
         contact_field=global_settings.consent.opted_out_contact_field
     )
+    if start_node is None:
+        start_node = consent_check
+    else:
+        start_node.default_exit = consent_check
 
     question_nodes = []
     for question in flow_config.questions:
@@ -75,7 +93,7 @@ def create_survey_flow_from_config(flow_config, flow_ids, global_settings, opt_o
         name=flow_config.flow_name,
         editing_language=global_settings.languages.editing_language,
         localization_languages=global_settings.languages.localization_languages,
-        start_node=consent_check
+        start_node=start_node
     )
 
 
@@ -88,21 +106,29 @@ def create_activation_flow_from_config(flow_config, flow_ids, global_settings, o
     :type opt_out_handler: flow_generation.FlowGraph.FlowNode | flow_generation.FlowGraph.FlowNode | Nones
     :rtype: flow_generation.FlowGraph.FlowGraph
     """
-    next_flow_node = None
+    start_node = create_initialisation_nodes(global_settings)
+
+    wait_for_response_node = WaitForResponseNode(
+        result_name=flow_config.result_name,
+        opt_out_detectors=opt_out_detectors,
+        opt_out_exit=opt_out_handler,
+    )
+
+    if start_node is None:
+        start_node = wait_for_response_node
+    else:
+        start_node.default_exit = wait_for_response_node
+
     if flow_config.next_flow is not None:
         next_flow_node = EnterAnotherFlowNode(flow_name=flow_config.next_flow, flow_uuid=flow_ids[flow_config.next_flow])
+        wait_for_response_node.default_exit = next_flow_node
 
     return FlowGraph(
         uuid=flow_ids[flow_config.flow_name],
         name=flow_config.flow_name,
         editing_language=global_settings.languages.editing_language,
         localization_languages=global_settings.languages.localization_languages,
-        start_node=WaitForResponseNode(
-            result_name=flow_config.result_name,
-            opt_out_detectors=opt_out_detectors,
-            opt_out_exit=opt_out_handler,
-            default_exit=next_flow_node
-        )
+        start_node=start_node
     )
 
 

@@ -63,6 +63,24 @@ class Languages:
         )
 
 
+class FlowInitialisation:
+    def __init__(self, set_language=None):
+        """
+        Initialisation steps to run at the start of a flow.
+
+        :param set_language: Communication language to set for the participant, in ISO-639-3 format.
+                             If None, does not change the participant's communication language.
+        :type set_language: str | None
+        """
+        self.set_language = set_language
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(
+            set_language=d["SetLanguage"]
+        )
+
+
 class GlobalSettings:
     """
     Settings to apply to every flow in a group of flows.
@@ -71,17 +89,21 @@ class GlobalSettings:
     :type languages: Languages
     :param consent: Configuration for consent-handling.
     :type consent: Consent
+    :param flow_initialisation: Configuration for optional initialisation to run at the beginning of every flow.
+    :type flow_initialisation: FlowInitialisation | None
     """
 
-    def __init__(self, languages, consent):
+    def __init__(self, languages, consent, flow_initialisation=None):
         self.languages = languages
         self.consent = consent
+        self.flow_initialisation = flow_initialisation
 
     @classmethod
     def from_dict(cls, d):
         return cls(
             languages=Languages.from_dict(d["Languages"]),
-            consent=Consent.from_dict(d["Consent"])
+            consent=Consent.from_dict(d["Consent"]),
+            flow_initialisation=FlowInitialisation.from_dict(d["FlowInitialisation"])
         )
 
 

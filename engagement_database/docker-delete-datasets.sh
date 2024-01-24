@@ -22,8 +22,8 @@ done
 
 # Check that the correct number of arguments were provided.
 if [[ $# -ne 5 ]]; then
-    echo "Usage: ./docker-run-engagement-db-script.sh [--dry-run] 
-    <google-cloud-credentials-file-path> <engagement-database-credentials-file-url> <database-path> 
+    echo "Usage: $0  
+    [--dry-run] <google-cloud-credentials-file-path> <engagement-database-credentials-file-url> <database-path> 
     <engagement-db-dataset-1> [<engagement-db-dataset-2> ... <engagement-db-dataset-n>]"
     echo "Deletes messages for given datasets in engagement database"
     exit 1
